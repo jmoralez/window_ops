@@ -6,7 +6,7 @@ This library is intended to be used as a replacement to `pd.rolling` and `pd.exp
 
 ## Install
 
-`pip install window_ops`
+`pip install window-ops`
 
 ## How to use
 
