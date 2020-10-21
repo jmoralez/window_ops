@@ -10,8 +10,11 @@ entries:
       title: Overview
       url: /
     - output: web,pdf
-      title: Window ops.
-      url: core.html
+      title: Expanding
+      url: expanding.html
+    - output: web,pdf
+      title: Rolling
+      url: rolling.html
     output: web
     title: window_ops
   output: web

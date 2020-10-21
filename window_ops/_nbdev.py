@@ -2,12 +2,17 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"rolling_mean": "00_core.ipynb",
-         "rolling_std": "00_core.ipynb",
-         "rolling_max": "00_core.ipynb",
-         "rolling_min": "00_core.ipynb"}
+index = {"expanding_mean": "expanding.ipynb",
+         "expanding_std": "expanding.ipynb",
+         "expanding_max": "expanding.ipynb",
+         "expanding_min": "expanding.ipynb",
+         "rolling_mean": "rolling.ipynb",
+         "rolling_std": "rolling.ipynb",
+         "rolling_max": "rolling.ipynb",
+         "rolling_min": "rolling.ipynb"}
 
-modules = ["core.py"]
+modules = ["expanding.py",
+           "rolling.py"]
 
 doc_url = "https://jose-moralez.github.io/window_ops/"
 

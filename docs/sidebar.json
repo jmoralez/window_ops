@@ -1,6 +1,7 @@
 {
   "window_ops": {
     "Overview": "/",
-    "Window ops.": "core.html"
+    "Expanding": "expanding.html",
+    "Rolling": "rolling.html"
   }
 }
