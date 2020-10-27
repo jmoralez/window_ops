@@ -2,7 +2,8 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"expanding_mean": "expanding.ipynb",
+index = {"ewm_mean": "ewm.ipynb",
+         "expanding_mean": "expanding.ipynb",
          "expanding_std": "expanding.ipynb",
          "expanding_max": "expanding.ipynb",
          "expanding_min": "expanding.ipynb",
@@ -11,7 +12,8 @@ index = {"expanding_mean": "expanding.ipynb",
          "rolling_max": "rolling.ipynb",
          "rolling_min": "rolling.ipynb"}
 
-modules = ["expanding.py",
+modules = ["ewm.py",
+           "expanding.py",
            "rolling.py"]
 
 doc_url = "https://jose-moralez.github.io/window_ops/"

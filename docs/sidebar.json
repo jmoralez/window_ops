@@ -1,6 +1,7 @@
 {
   "window_ops": {
     "Overview": "/",
+    "EWM": "ewm.html",
     "Expanding": "expanding.html",
     "Rolling": "rolling.html"
   }

@@ -10,6 +10,9 @@ entries:
       title: Overview
       url: /
     - output: web,pdf
+      title: EWM
+      url: ewm.html
+    - output: web,pdf
       title: Expanding
       url: expanding.html
     - output: web,pdf
