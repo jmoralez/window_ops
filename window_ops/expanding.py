@@ -11,6 +11,7 @@ import pandas as pd
 from numba import njit
 
 from .rolling import _lt, _gt
+from .utils import _expanding_std
 
 # Cell
 @njit
@@ -26,15 +27,7 @@ def expanding_mean(x: np.ndarray) -> np.ndarray:
 # Cell
 @njit
 def expanding_std(x: np.ndarray) -> np.ndarray:
-    n_samples = x.size
-    out = np.empty(n_samples, dtype=np.float32)
-    out[0] = np.nan
-    accum_x = x[0]
-    accum_xsq = x[0]**2
-    for i in range(1, n_samples):
-        accum_x += x[i]
-        accum_xsq += x[i]**2
-        out[i] = sqrt((accum_xsq - accum_x**2 / (i+1)) / i)
+    out, _, _ = _expanding_std(x)
     return out
 
 # Internal Cell

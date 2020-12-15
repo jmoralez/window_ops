@@ -7,6 +7,15 @@ index = {"ewm_mean": "ewm.ipynb",
          "expanding_std": "expanding.ipynb",
          "expanding_max": "expanding.ipynb",
          "expanding_min": "expanding.ipynb",
+         "ExpandingMean": "online.ipynb",
+         "ExpandingMax": "online.ipynb",
+         "ExpandingMin": "online.ipynb",
+         "ExpandingStd": "online.ipynb",
+         "RollingMean": "online.ipynb",
+         "RollingStd": "online.ipynb",
+         "RollingMax": "online.ipynb",
+         "RollingMin": "online.ipynb",
+         "EWMMean": "online.ipynb",
          "rolling_mean": "rolling.ipynb",
          "rolling_std": "rolling.ipynb",
          "rolling_max": "rolling.ipynb",
@@ -14,7 +23,9 @@ index = {"ewm_mean": "ewm.ipynb",
 
 modules = ["ewm.py",
            "expanding.py",
-           "rolling.py"]
+           "online.py",
+           "rolling.py",
+           "utils.py"]
 
 doc_url = "https://jose-moralez.github.io/window_ops/"
 

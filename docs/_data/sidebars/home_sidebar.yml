@@ -16,8 +16,14 @@ entries:
       title: Expanding
       url: expanding.html
     - output: web,pdf
+      title: Online
+      url: online.html
+    - output: web,pdf
       title: Rolling
       url: rolling.html
+    - output: web,pdf
+      title: Utils
+      url: utils.html
     output: web
     title: window_ops
   output: web

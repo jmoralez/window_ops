@@ -14,7 +14,7 @@ This library is intended to be used as a replacement to `pd.rolling` and `pd.exp
 
 Simply use `rolling_{op}` with a one dimensional `np.ndarray` by specifying the window size and the minimum number of samples to compute the operation (by default `min_samples` equals `window_size`). The result will have `min_samples` - 1 `np.nan`'s at the beggining of the array.
 
-```python
+```
 import random
 
 import numpy as np
@@ -38,7 +38,7 @@ y
 
 
 
-```python
+```
 rolling_mean(y, window_size=window_size)
 ```
 
@@ -51,7 +51,7 @@ rolling_mean(y, window_size=window_size)
 
 
 
-```python
+```
 ys = pd.Series(y)
 ys.rolling(window_size).mean().values
 ```
@@ -64,7 +64,7 @@ ys.rolling(window_size).mean().values
 
 
 
-```python
+```
 big_y = np.random.rand(1_000)
 
 %timeit rolling_mean(big_y, window_size=8)
@@ -73,7 +73,7 @@ big_y = np.random.rand(1_000)
     2.53 µs ± 84 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
 
 
-```python
+```
 big_ys = pd.Series(big_y)
 
 %timeit big_ys.rolling(8).mean()
@@ -86,7 +86,7 @@ big_ys = pd.Series(big_y)
 
 Simply use `expanding_{op}` with a one dimensional `np.ndarray`. For `expanding_std` the first value in the output array is `np.nan`, for all the other operations a full array is returned.
 
-```python
+```
 y
 ```
 
@@ -98,7 +98,7 @@ y
 
 
 
-```python
+```
 expanding_mean(y)
 ```
 
@@ -111,7 +111,7 @@ expanding_mean(y)
 
 
 
-```python
+```
 ys.expanding().mean().values
 ```
 
@@ -123,14 +123,14 @@ ys.expanding().mean().values
 
 
 
-```python
+```
 %timeit expanding_mean(big_y)
 ```
 
     1.87 µs ± 50.5 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
 
 
-```python
+```
 %timeit big_ys.expanding().mean()
 ```
 
@@ -141,7 +141,7 @@ ys.expanding().mean().values
 
 Simply use `ewm_{op}` with a one dimensional `np.ndarray` and the smoothing parameter `alpha`. Currently only `ewm_mean` is implemented.
 
-```python
+```
 y
 ```
 
@@ -153,7 +153,7 @@ y
 
 
 
-```python
+```
 alpha = random.random()
 alpha
 ```
@@ -165,7 +165,7 @@ alpha
 
 
 
-```python
+```
 ewm_mean(y, alpha=alpha)
 ```
 
@@ -178,7 +178,7 @@ ewm_mean(y, alpha=alpha)
 
 
 
-```python
+```
 ys.ewm(alpha=alpha, adjust=False).mean().values
 ```
 
@@ -190,14 +190,14 @@ ys.ewm(alpha=alpha, adjust=False).mean().values
 
 
 
-```python
+```
 %timeit ewm_mean(big_y, alpha)
 ```
 
     5.56 µs ± 62.6 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
 
 
-```python
+```
 %timeit big_ys.ewm(alpha=alpha, adjust=False).mean().values
 ```
 

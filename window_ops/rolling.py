@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 from numba import njit
 
+from .utils import _rolling_std
+
 # Cell
 @njit
 def rolling_mean(x: np.ndarray,
@@ -35,24 +37,7 @@ def rolling_mean(x: np.ndarray,
 def rolling_std(x: np.ndarray,
                 window_size: int,
                 min_samples: Optional[int] = None) -> np.ndarray:
-    if min_samples is None:
-        min_samples = window_size
-    if min_samples < 2:
-        raise ValueError('min_samples must be greater than 1')
-    n_samples = x.size
-    out = np.full(n_samples, np.nan, dtype=np.float32)
-    rolling_means = rolling_mean(x, window_size, min_samples)
-    accum_xsq = 0.
-    for i in range(min_samples - 1):
-        accum_xsq += x[i]**2
-    for i in range(min_samples - 1, window_size):
-        accum_xsq += x[i]**2
-        if i > 0:
-            out[i] = sqrt((accum_xsq - (i+1) * rolling_means[i]**2) / i)
-    out[0] = np.nan
-    for i in range(window_size, n_samples):
-        accum_xsq += x[i]**2 - x[i-window_size]**2
-        out[i] = sqrt((accum_xsq - window_size * rolling_means[i]**2) / (window_size-1))
+    out, _, _ = _rolling_std(x, window_size, min_samples)
     return out
 
 # Internal Cell
