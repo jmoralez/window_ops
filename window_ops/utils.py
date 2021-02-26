@@ -4,48 +4,55 @@ __all__ = []
 
 # Internal Cell
 from math import sqrt
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 from numba import njit
 
 # Internal Cell
 @njit
-def _expanding_std(x: np.ndarray) -> np.ndarray:
-    n_samples = x.size
-    out = np.empty(n_samples, dtype=np.float32)
-    out[0] = np.nan
-    accum_x = x[0]
-    accum_xsq = x[0]**2
-    for i in range(1, n_samples):
-        accum_x += x[i]
-        accum_xsq += x[i]**2
-        out[i] = sqrt((accum_xsq - accum_x**2 / (i+1)) / i)
-    return out, accum_xsq, accum_x
+def _validate_rolling_sizes(n_samples: int,
+                            window_size: int,
+                            min_samples: Optional[int] = None
+                           ) -> Tuple[int,int]:
+    if window_size > n_samples:
+        window_size = n_samples
+    # have to split the following if because of numba
+    if min_samples is None:
+        min_samples = window_size
+    if min_samples > window_size:
+        min_samples = window_size
+    return window_size, min_samples
 
 @njit
 def _rolling_std(x: np.ndarray,
-                window_size: int,
-                min_samples: Optional[int] = None) -> np.ndarray:
-    if min_samples is None:
-        min_samples = window_size
+                 window_size: int,
+                 min_samples: Optional[int] = None) -> np.ndarray:
+    n_samples = x.size
+    window_size, min_samples = _validate_rolling_sizes(n_samples, window_size, min_samples)
     if min_samples < 2:
         raise ValueError('min_samples must be greater than 1')
-    n_samples = x.size
     out = np.full(n_samples, np.nan, dtype=np.float32)
-    accum_x = 0.
-    accum_xsq = 0.
-    for i in range(min_samples - 1):
-        accum_x += x[i]
-        accum_xsq += x[i]**2
-    for i in range(min_samples - 1, window_size):
-        accum_x += x[i]
-        accum_xsq += x[i]**2
-        if i > 0:
-            out[i] = sqrt((accum_xsq - accum_x**2 / (i+1)) / i)
-    out[0] = np.nan
+    prev_avg = 0.
+    curr_avg = x[0]
+    x_m2n = 0.
+    for i in range(1, window_size):
+        prev_avg = curr_avg
+        curr_avg = prev_avg + (x[i] - prev_avg) / (i + 1)
+        x_m2n += (x[i] - prev_avg) * (x[i] - curr_avg)
+        if i + 1 >= min_samples:
+            out[i] = sqrt(x_m2n / i)
     for i in range(window_size, n_samples):
-        accum_xsq += x[i]**2 - x[i-window_size]**2
-        accum_x += x[i] - x[i-window_size]
-        out[i] = sqrt((accum_xsq - accum_x**2 / window_size) / (window_size-1))
-    return out, accum_xsq, accum_x
+        prev_avg = curr_avg
+        curr_avg = prev_avg + (x[i] - x[i-window_size]) / window_size
+        x_m2n += (x[i] - x[i-window_size]) * (x[i] - curr_avg + x[i-window_size] - prev_avg)
+        out[i] = sqrt(x_m2n / (window_size - 1))
+    return out, curr_avg, x_m2n
+
+@njit
+def _gt(x: float, y: float) -> float:
+    return x - y
+
+@njit
+def _lt(x: float, y: float) -> float:
+    return -_gt(x, y)

@@ -6,7 +6,6 @@ __all__ = ['ewm_mean']
 import random
 
 import numpy as np
-import pandas as pd
 from numba import njit
 
 # Cell

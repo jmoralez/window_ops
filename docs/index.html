@@ -31,7 +31,7 @@ nb_path: "nbs/index.ipynb"
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This library is intended to be used as a replacement to <code>pd.rolling</code> and <code>pd.expanding</code> to gain a speedup by operating on numpy arrays and avoiding input checks.</p>
+<p>This library is intended to be used as an alternative to <code>pd.Series.rolling</code> and <code>pd.Series.expanding</code> to gain a speedup by using numba optimized functions operating on numpy arrays and avoiding input checks. There are also online classes for more efficient updates of window statistics.</p>
 
 </div>
 </div>
@@ -57,14 +57,14 @@ nb_path: "nbs/index.ipynb"
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Rolling">Rolling<a class="anchor-link" href="#Rolling"> </a></h3>
+<p>For a transformations <code>n_samples</code> -&gt; <code>n_samples</code> you can use <code>{[seasonal_](rolling|expanding)}_{(mean|max|min|std)}</code> on an array.</p>
+
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Simply use <code>rolling_{op}</code> with a one dimensional <code>np.ndarray</code> by specifying the window size and the minimum number of samples to compute the operation (by default <code>min_samples</code> equals <code>window_size</code>). The result will have <code>min_samples</code> - 1 <code>np.nan</code>'s at the beggining of the array.</p>
-
+<h4 id="Benchmarks">Benchmarks<a class="anchor-link" href="#Benchmarks"> </a></h4>
 </div>
 </div>
 </div>
@@ -75,175 +75,13 @@ nb_path: "nbs/index.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
-
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">window_ops.rolling</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">window_ops.expanding</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">window_ops.ewm</span> <span class="kn">import</span> <span class="o">*</span>
-
-<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">window_size</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="n">y</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n_samples</span> <span class="o">=</span> <span class="mi">1_000</span>  <span class="c1"># array size</span>
+<span class="n">window_size</span> <span class="o">=</span> <span class="mi">8</span>  <span class="c1"># for rolling operations</span>
+<span class="n">season_length</span> <span class="o">=</span> <span class="mi">7</span>  <span class="c1"># for seasonal operations</span>
+<span class="n">execute_times</span> <span class="o">=</span> <span class="mi">1_000</span> <span class="c1"># number of times each function will be executed</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>array([0.5488135 , 0.71518937, 0.60276338, 0.54488318, 0.4236548 ,
-       0.64589411, 0.43758721, 0.891773  , 0.96366276, 0.38344152])</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rolling_mean</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="n">window_size</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>array([       nan,        nan, 0.62225544, 0.62094533, 0.5237671 ,
-       0.53814405, 0.5023787 , 0.6584181 , 0.764341  , 0.7462924 ],
-      dtype=float32)</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ys</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-<span class="n">ys</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>array([       nan,        nan, 0.62225542, 0.62094531, 0.52376712,
-       0.53814403, 0.50237871, 0.65841811, 0.76434099, 0.74629243])</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">big_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1_000</span><span class="p">)</span>
-
-<span class="o">%</span><span class="k">timeit</span> rolling_mean(big_y, window_size=8)
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>2.53 µs ± 84 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">big_ys</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">big_y</span><span class="p">)</span>
-
-<span class="o">%</span><span class="k">timeit</span> big_ys.rolling(8).mean()
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>305 µs ± 11.9 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -252,13 +90,7 @@ nb_path: "nbs/index.ipynb"
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Expanding">Expanding<a class="anchor-link" href="#Expanding"> </a></h3>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Simply use <code>expanding_{op}</code> with a one dimensional <code>np.ndarray</code>. For <a href="/window_ops/expanding.html#expanding_std"><code>expanding_std</code></a> the first value in the output array is <code>np.nan</code>, for all the other operations a full array is returned.</p>
+<p>Average times in milliseconds.</p>
 
 </div>
 </div>
@@ -270,7 +102,7 @@ nb_path: "nbs/index.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">y</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">display_dataframe</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -283,10 +115,98 @@ nb_path: "nbs/index.ipynb"
 <div class="output_area">
 
 
+<div class="output_markdown rendered_html output_subarea output_execute_result">
+<table>
+<thead><tr>
+<th style="text-align:left"></th>
+<th style="text-align:right">window_ops</th>
+<th style="text-align:right">pandas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">rolling_mean</td>
+<td style="text-align:right">0</td>
+<td style="text-align:right">0.33</td>
+</tr>
+<tr>
+<td style="text-align:left">rolling_max</td>
+<td style="text-align:right">0.01</td>
+<td style="text-align:right">0.37</td>
+</tr>
+<tr>
+<td style="text-align:left">rolling_min</td>
+<td style="text-align:right">0.01</td>
+<td style="text-align:right">0.32</td>
+</tr>
+<tr>
+<td style="text-align:left">rolling_std</td>
+<td style="text-align:right">0.01</td>
+<td style="text-align:right">0.33</td>
+</tr>
+<tr>
+<td style="text-align:left">expanding_mean</td>
+<td style="text-align:right">0</td>
+<td style="text-align:right">0.31</td>
+</tr>
+<tr>
+<td style="text-align:left">expanding_max</td>
+<td style="text-align:right">0.01</td>
+<td style="text-align:right">0.32</td>
+</tr>
+<tr>
+<td style="text-align:left">expanding_min</td>
+<td style="text-align:right">0.01</td>
+<td style="text-align:right">0.32</td>
+</tr>
+<tr>
+<td style="text-align:left">expanding_std</td>
+<td style="text-align:right">0.01</td>
+<td style="text-align:right">0.33</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_rolling_mean</td>
+<td style="text-align:right">0.01</td>
+<td style="text-align:right">3.78</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_rolling_max</td>
+<td style="text-align:right">0.03</td>
+<td style="text-align:right">3.85</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_rolling_min</td>
+<td style="text-align:right">0.02</td>
+<td style="text-align:right">3.8</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_rolling_std</td>
+<td style="text-align:right">0.02</td>
+<td style="text-align:right">3.93</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_expanding_mean</td>
+<td style="text-align:right">0.01</td>
+<td style="text-align:right">3.73</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_expanding_max</td>
+<td style="text-align:right">0.24</td>
+<td style="text-align:right">3.86</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_expanding_min</td>
+<td style="text-align:right">0.22</td>
+<td style="text-align:right">3.83</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_expanding_std</td>
+<td style="text-align:right">0.02</td>
+<td style="text-align:right">3.86</td>
+</tr>
+</tbody>
+</table>
 
-<div class="output_text output_subarea output_execute_result">
-<pre>array([0.5488135 , 0.71518937, 0.60276338, 0.54488318, 0.4236548 ,
-       0.64589411, 0.43758721, 0.891773  , 0.96366276, 0.38344152])</pre>
 </div>
 
 </div>
@@ -304,7 +224,7 @@ nb_path: "nbs/index.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">expanding_mean</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">display_dataframe</span><span class="p">(</span><span class="n">speedups</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -317,321 +237,83 @@ nb_path: "nbs/index.ipynb"
 <div class="output_area">
 
 
+<div class="output_markdown rendered_html output_subarea output_execute_result">
+<table>
+<thead><tr>
+<th style="text-align:left"></th>
+<th style="text-align:right">times faster</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">rolling_mean</td>
+<td style="text-align:right">122.05</td>
+</tr>
+<tr>
+<td style="text-align:left">rolling_max</td>
+<td style="text-align:right">29.85</td>
+</tr>
+<tr>
+<td style="text-align:left">rolling_min</td>
+<td style="text-align:right">23.45</td>
+</tr>
+<tr>
+<td style="text-align:left">rolling_std</td>
+<td style="text-align:right">64.31</td>
+</tr>
+<tr>
+<td style="text-align:left">expanding_mean</td>
+<td style="text-align:right">104.72</td>
+</tr>
+<tr>
+<td style="text-align:left">expanding_max</td>
+<td style="text-align:right">22.17</td>
+</tr>
+<tr>
+<td style="text-align:left">expanding_min</td>
+<td style="text-align:right">23.35</td>
+</tr>
+<tr>
+<td style="text-align:left">expanding_std</td>
+<td style="text-align:right">40.69</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_rolling_mean</td>
+<td style="text-align:right">275.68</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_rolling_max</td>
+<td style="text-align:right">148.73</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_rolling_min</td>
+<td style="text-align:right">154.22</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_rolling_std</td>
+<td style="text-align:right">229.91</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_expanding_mean</td>
+<td style="text-align:right">267.48</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_expanding_max</td>
+<td style="text-align:right">16.25</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_expanding_min</td>
+<td style="text-align:right">17.34</td>
+</tr>
+<tr>
+<td style="text-align:left">seasonal_expanding_std</td>
+<td style="text-align:right">212.16</td>
+</tr>
+</tbody>
+</table>
 
-<div class="output_text output_subarea output_execute_result">
-<pre>array([0.5488135 , 0.63200146, 0.62225544, 0.60291237, 0.5670608 ,
-       0.5801997 , 0.5598265 , 0.6013198 , 0.64158016, 0.6157663 ],
-      dtype=float32)</pre>
 </div>
 
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ys</span><span class="o">.</span><span class="n">expanding</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>array([0.5488135 , 0.63200144, 0.62225542, 0.60291236, 0.56706085,
-       0.58019972, 0.55982651, 0.60131982, 0.64158015, 0.61576628])</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> expanding_mean(big_y)
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>1.87 µs ± 50.5 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> big_ys.expanding().mean()
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>325 µs ± 13.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="EWM">EWM<a class="anchor-link" href="#EWM"> </a></h3>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Simply use <code>ewm_{op}</code> with a one dimensional <code>np.ndarray</code> and the smoothing parameter <code>alpha</code>. Currently only <a href="/window_ops/ewm.html#ewm_mean"><code>ewm_mean</code></a> is implemented.</p>
-
-</div>
-</div>
-</div>
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">y</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>array([0.5488135 , 0.71518937, 0.60276338, 0.54488318, 0.4236548 ,
-       0.64589411, 0.43758721, 0.891773  , 0.96366276, 0.38344152])</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">alpha</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
-<span class="n">alpha</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>0.8444218515250481</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ewm_mean</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>array([0.5488135 , 0.68930495, 0.6162273 , 0.55598277, 0.44424215,
-       0.6145215 , 0.46511433, 0.8253942 , 0.9421512 , 0.47036454],
-      dtype=float32)</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ys</span><span class="o">.</span><span class="n">ewm</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">adjust</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>array([0.5488135 , 0.68930492, 0.61622735, 0.55598278, 0.44424214,
-       0.61452147, 0.46511432, 0.82539423, 0.9421512 , 0.47036454])</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> ewm_mean(big_y, alpha)
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>5.56 µs ± 62.6 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> big_ys.ewm(alpha=alpha, adjust=False).mean().values
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>302 µs ± 13 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
-</pre>
-</div>
 </div>
 
 </div>

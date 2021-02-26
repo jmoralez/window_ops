@@ -2,7 +2,7 @@
 > Naive and fast implementations of common window operations.
 
 
-This library is intended to be used as a replacement to `pd.rolling` and `pd.expanding` to gain a speedup by operating on numpy arrays and avoiding input checks.
+This library is intended to be used as an alternative to `pd.Series.rolling` and `pd.Series.expanding` to gain a speedup by using numba optimized functions operating on numpy arrays and avoiding input checks. There are also online classes for more efficient updates of window statistics.
 
 ## Install
 
@@ -10,196 +10,71 @@ This library is intended to be used as a replacement to `pd.rolling` and `pd.exp
 
 ## How to use
 
-### Rolling
+For a transformations `n_samples` -> `n_samples` you can use `{[seasonal_](rolling|expanding)}_{(mean|max|min|std)}` on an array.
 
-Simply use `rolling_{op}` with a one dimensional `np.ndarray` by specifying the window size and the minimum number of samples to compute the operation (by default `min_samples` equals `window_size`). The result will have `min_samples` - 1 `np.nan`'s at the beggining of the array.
+#### Benchmarks
 
+```python
+n_samples = 1_000  # array size
+window_size = 8  # for rolling operations
+season_length = 7  # for seasonal operations
+execute_times = 1_000 # number of times each function will be executed
 ```
-import random
 
-import numpy as np
-import pandas as pd
-from window_ops.rolling import *
-from window_ops.expanding import *
-from window_ops.ewm import *
+Average times in milliseconds.
 
-np.random.seed(0)
-random.seed(0)
-y = np.random.rand(10)
-window_size = 3
-y
+```python
+display_dataframe(times)
 ```
 
 
 
 
-    array([0.5488135 , 0.71518937, 0.60276338, 0.54488318, 0.4236548 ,
-           0.64589411, 0.43758721, 0.891773  , 0.96366276, 0.38344152])
+|                         |   window_ops |   pandas |
+|:------------------------|-------------:|---------:|
+| rolling_mean            |         0    |     0.33 |
+| rolling_max             |         0.01 |     0.37 |
+| rolling_min             |         0.01 |     0.32 |
+| rolling_std             |         0.01 |     0.33 |
+| expanding_mean          |         0    |     0.31 |
+| expanding_max           |         0.01 |     0.32 |
+| expanding_min           |         0.01 |     0.32 |
+| expanding_std           |         0.01 |     0.33 |
+| seasonal_rolling_mean   |         0.01 |     3.78 |
+| seasonal_rolling_max    |         0.03 |     3.85 |
+| seasonal_rolling_min    |         0.02 |     3.8  |
+| seasonal_rolling_std    |         0.02 |     3.93 |
+| seasonal_expanding_mean |         0.01 |     3.73 |
+| seasonal_expanding_max  |         0.24 |     3.86 |
+| seasonal_expanding_min  |         0.22 |     3.83 |
+| seasonal_expanding_std  |         0.02 |     3.86 |
 
 
 
-```
-rolling_mean(y, window_size=window_size)
-```
-
-
-
-
-    array([       nan,        nan, 0.62225544, 0.62094533, 0.5237671 ,
-           0.53814405, 0.5023787 , 0.6584181 , 0.764341  , 0.7462924 ],
-          dtype=float32)
-
-
-
-```
-ys = pd.Series(y)
-ys.rolling(window_size).mean().values
-```
-
-
-
-
-    array([       nan,        nan, 0.62225542, 0.62094531, 0.52376712,
-           0.53814403, 0.50237871, 0.65841811, 0.76434099, 0.74629243])
-
-
-
-```
-big_y = np.random.rand(1_000)
-
-%timeit rolling_mean(big_y, window_size=8)
-```
-
-    2.53 µs ± 84 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-
-
-```
-big_ys = pd.Series(big_y)
-
-%timeit big_ys.rolling(8).mean()
-```
-
-    305 µs ± 11.9 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
-
-
-### Expanding
-
-Simply use `expanding_{op}` with a one dimensional `np.ndarray`. For `expanding_std` the first value in the output array is `np.nan`, for all the other operations a full array is returned.
-
-```
-y
+```python
+display_dataframe(speedups)
 ```
 
 
 
 
-    array([0.5488135 , 0.71518937, 0.60276338, 0.54488318, 0.4236548 ,
-           0.64589411, 0.43758721, 0.891773  , 0.96366276, 0.38344152])
+|                         |   times faster |
+|:------------------------|---------------:|
+| rolling_mean            |         122.05 |
+| rolling_max             |          29.85 |
+| rolling_min             |          23.45 |
+| rolling_std             |          64.31 |
+| expanding_mean          |         104.72 |
+| expanding_max           |          22.17 |
+| expanding_min           |          23.35 |
+| expanding_std           |          40.69 |
+| seasonal_rolling_mean   |         275.68 |
+| seasonal_rolling_max    |         148.73 |
+| seasonal_rolling_min    |         154.22 |
+| seasonal_rolling_std    |         229.91 |
+| seasonal_expanding_mean |         267.48 |
+| seasonal_expanding_max  |          16.25 |
+| seasonal_expanding_min  |          17.34 |
+| seasonal_expanding_std  |         212.16 |
 
-
-
-```
-expanding_mean(y)
-```
-
-
-
-
-    array([0.5488135 , 0.63200146, 0.62225544, 0.60291237, 0.5670608 ,
-           0.5801997 , 0.5598265 , 0.6013198 , 0.64158016, 0.6157663 ],
-          dtype=float32)
-
-
-
-```
-ys.expanding().mean().values
-```
-
-
-
-
-    array([0.5488135 , 0.63200144, 0.62225542, 0.60291236, 0.56706085,
-           0.58019972, 0.55982651, 0.60131982, 0.64158015, 0.61576628])
-
-
-
-```
-%timeit expanding_mean(big_y)
-```
-
-    1.87 µs ± 50.5 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
-
-
-```
-%timeit big_ys.expanding().mean()
-```
-
-    325 µs ± 13.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
-
-
-### EWM
-
-Simply use `ewm_{op}` with a one dimensional `np.ndarray` and the smoothing parameter `alpha`. Currently only `ewm_mean` is implemented.
-
-```
-y
-```
-
-
-
-
-    array([0.5488135 , 0.71518937, 0.60276338, 0.54488318, 0.4236548 ,
-           0.64589411, 0.43758721, 0.891773  , 0.96366276, 0.38344152])
-
-
-
-```
-alpha = random.random()
-alpha
-```
-
-
-
-
-    0.8444218515250481
-
-
-
-```
-ewm_mean(y, alpha=alpha)
-```
-
-
-
-
-    array([0.5488135 , 0.68930495, 0.6162273 , 0.55598277, 0.44424215,
-           0.6145215 , 0.46511433, 0.8253942 , 0.9421512 , 0.47036454],
-          dtype=float32)
-
-
-
-```
-ys.ewm(alpha=alpha, adjust=False).mean().values
-```
-
-
-
-
-    array([0.5488135 , 0.68930492, 0.61622735, 0.55598278, 0.44424214,
-           0.61452147, 0.46511432, 0.82539423, 0.9421512 , 0.47036454])
-
-
-
-```
-%timeit ewm_mean(big_y, alpha)
-```
-
-    5.56 µs ± 62.6 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-
-
-```
-%timeit big_ys.ewm(alpha=alpha, adjust=False).mean().values
-```
-
-    302 µs ± 13 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
