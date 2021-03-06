@@ -13,7 +13,6 @@ import numpy as np
 from .expanding import *
 from .ewm import *
 from .rolling import *
-from .utils import _rolling_std
 
 # Internal Cell
 class BaseOnlineRolling:

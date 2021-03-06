@@ -43,11 +43,47 @@ nb_path: "nbs/rolling.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="k">def</span> <span class="nf">prepend_nans</span><span class="p">(</span>
+        <span class="n">collection</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">],</span>
+        <span class="n">number_of_nans</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]:</span>
+    <span class="n">nans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">number_of_nans</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">nans</span><span class="p">,</span> <span class="n">collection</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">nans</span><span class="p">),</span> <span class="n">collection</span><span class="p">])</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Collection must be np.ndarray or pd.Series, got: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">collection</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-<span class="n">ys</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<span class="n">number_of_nans</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">array_with_nans</span> <span class="o">=</span> <span class="n">prepend_nans</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">number_of_nans</span><span class="p">)</span>
+<span class="n">series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+<span class="n">series_with_nans</span> <span class="o">=</span> <span class="n">prepend_nans</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">number_of_nans</span><span class="p">)</span>
+<span class="n">all_nans_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -66,50 +102,71 @@ nb_path: "nbs/rolling.ipynb"
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="rolling_mean" class="doc_header"><code>rolling_mean</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L16" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>rolling_mean</code>(<strong><code>x</code></strong>:<code>ndarray</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
-</blockquote>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">window_size</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="n">min_samples</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">window_size</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_rolling_vs_pandas</span><span class="p">(</span><span class="n">rolling</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+                           <span class="n">pandas_aggregation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                           <span class="n">lower_bound_for_min_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                           <span class="n">non_na_values</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    
+    <span class="n">window_size</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">min_samples</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">window_size</span><span class="p">)</span>
+    
+    <span class="c1"># expanding for [min_samples, window_size), rolling for [window_size, n_samples]</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+        <span class="n">rolling</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">lower_bound_for_min_samples</span><span class="p">),</span> 
+        <span class="n">series</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">lower_bound_for_min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">pandas_aggregation</span><span class="p">)</span>
+    <span class="p">)</span>
 
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rolling_mean</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> 
-                   <span class="n">ys</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+    <span class="c1"># arbitrary min_samples and window_size</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+        <span class="n">rolling</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_samples</span><span class="p">),</span> 
+        <span class="n">series</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">pandas_aggregation</span><span class="p">)</span>
+    <span class="p">)</span>
 
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rolling_mean</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_samples</span><span class="p">),</span> 
-                   <span class="n">ys</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                   <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># min_samples = window_size</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+        <span class="n">rolling</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">window_size</span><span class="p">),</span>
+        <span class="n">series</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">pandas_aggregation</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># skip nas</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+        <span class="n">rolling</span><span class="p">(</span><span class="n">array_with_nans</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_samples</span><span class="p">),</span>
+        <span class="n">series_with_nans</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">pandas_aggregation</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># |non-na-values| &lt; min_samples</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+        <span class="n">rolling</span><span class="p">(</span>
+            <span class="n">array_with_nans</span><span class="p">[:</span><span class="n">number_of_nans</span> <span class="o">+</span> <span class="n">non_na_values</span><span class="p">],</span>
+            <span class="n">window_size</span><span class="o">=</span><span class="n">non_na_values</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">min_samples</span><span class="o">=</span><span class="n">non_na_values</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">all_nans_array</span><span class="p">[:</span><span class="n">number_of_nans</span> <span class="o">+</span> <span class="n">non_na_values</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># min_samples &lt; |non-na-values| &lt; window_size</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+        <span class="n">rolling</span><span class="p">(</span>
+            <span class="n">array_with_nans</span><span class="p">[:</span><span class="n">number_of_nans</span> <span class="o">+</span> <span class="n">lower_bound_for_min_samples</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> 
+            <span class="n">window_size</span><span class="o">=</span><span class="n">lower_bound_for_min_samples</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">min_samples</span><span class="o">=</span><span class="n">lower_bound_for_min_samples</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span>
+            <span class="n">all_nans_array</span><span class="p">[:</span><span class="n">number_of_nans</span><span class="p">],</span> 
+            <span class="n">rolling</span><span class="p">(</span>
+                <span class="n">array_with_nans</span><span class="p">[</span><span class="n">number_of_nans</span> <span class="p">:</span> <span class="n">number_of_nans</span><span class="o">+</span><span class="n">lower_bound_for_min_samples</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> 
+                <span class="n">window_size</span><span class="o">=</span><span class="n">lower_bound_for_min_samples</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> 
+                <span class="n">min_samples</span><span class="o">=</span><span class="n">lower_bound_for_min_samples</span><span class="p">)</span>
+        <span class="p">))</span>
+    <span class="p">)</span>
+
+    <span class="c1"># all-nan -&gt; all-nan</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span>
+        <span class="n">rolling</span><span class="p">(</span><span class="n">all_nans_array</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_samples</span><span class="p">),</span>
+        <span class="n">all_nans_array</span>
+    <span class="p">)</span>    
 </pre></div>
 
     </div>
@@ -130,8 +187,10 @@ nb_path: "nbs/rolling.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="rolling_std" class="doc_header"><code>rolling_std</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L34" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>rolling_std</code>(<strong><code>x</code></strong>:<code>ndarray</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
+<h4 id="rolling_mean" class="doc_header"><code>rolling_mean</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L37" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>rolling_mean</code>(<strong><code>input_array</code></strong>:<code>ndarray</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
 </blockquote>
+<p>Compute the rolling_mean over the last non-na window_size samples of the
+input array starting at min_samples.</p>
 
 </div>
 
@@ -157,20 +216,7 @@ nb_path: "nbs/rolling.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">window_size</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="n">min_samples</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">window_size</span><span class="p">)</span>
-
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rolling_std</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> 
-                   <span class="n">ys</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                   <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rolling_std</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_samples</span><span class="p">),</span> 
-                   <span class="n">ys</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                   <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rolling_std</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">window_size</span><span class="p">),</span> 
-                   <span class="n">ys</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">)</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                   <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_rolling_vs_pandas</span><span class="p">(</span><span class="n">rolling</span><span class="o">=</span><span class="n">rolling_mean</span><span class="p">,</span> <span class="n">pandas_aggregation</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -191,8 +237,10 @@ nb_path: "nbs/rolling.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="rolling_max" class="doc_header"><code>rolling_max</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L60" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>rolling_max</code>(<strong><code>x</code></strong>:<code>ndarray</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
+<h4 id="rolling_std" class="doc_header"><code>rolling_std</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L101" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>rolling_std</code>(<strong><code>input_array</code></strong>:<code>ndarray</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
 </blockquote>
+<p>Compute the rolling_std over the last non-na window_size samples of the
+input array starting at min_samples.</p>
 
 </div>
 
@@ -218,19 +266,7 @@ nb_path: "nbs/rolling.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">window_size</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="n">min_samples</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">window_size</span><span class="p">)</span>
-
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rolling_max</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> 
-                   <span class="n">ys</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rolling_max</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_samples</span><span class="p">),</span> 
-                   <span class="n">ys</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                   <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rolling_max</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">window_size</span><span class="p">),</span>
-                   <span class="n">ys</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                   <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_rolling_vs_pandas</span><span class="p">(</span><span class="n">rolling</span><span class="o">=</span><span class="n">rolling_std</span><span class="p">,</span> <span class="n">pandas_aggregation</span><span class="o">=</span><span class="s1">&#39;std&#39;</span><span class="p">,</span> <span class="n">lower_bound_for_min_samples</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -251,8 +287,10 @@ nb_path: "nbs/rolling.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="rolling_min" class="doc_header"><code>rolling_min</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L67" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>rolling_min</code>(<strong><code>x</code></strong>:<code>ndarray</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
+<h4 id="rolling_max" class="doc_header"><code>rolling_max</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L140" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>rolling_max</code>(<strong><code>input_array</code></strong>:<code>ndarray</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
 </blockquote>
+<p>Compute the rolling_max over the last non-na window_size samples of the
+input array starting at min_samples.</p>
 
 </div>
 
@@ -278,19 +316,57 @@ nb_path: "nbs/rolling.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">window_size</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="n">min_samples</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">window_size</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_rolling_vs_pandas</span><span class="p">(</span><span class="n">rolling_max</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">)</span>
+</pre></div>
 
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rolling_min</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> 
-                   <span class="n">ys</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+    </div>
+</div>
+</div>
 
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rolling_min</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_samples</span><span class="p">),</span> 
-                   <span class="n">ys</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                   <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</div>
+    {% endraw %}
 
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rolling_min</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">window_size</span><span class="p">),</span> 
-                   <span class="n">ys</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                   <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="rolling_min" class="doc_header"><code>rolling_min</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L148" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>rolling_min</code>(<strong><code>x</code></strong>:<code>ndarray</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
+</blockquote>
+<p>Compute the rolling_min over the last non-na window_size samples of the
+input array starting at min_samples.</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_rolling_vs_pandas</span><span class="p">(</span><span class="n">rolling_min</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -309,119 +385,90 @@ nb_path: "nbs/rolling.ipynb"
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="seasonal_rolling_mean" class="doc_header"><code>seasonal_rolling_mean</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L86" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>seasonal_rolling_mean</code>(<strong><code>x</code></strong>:<code>ndarray</code>, <strong><code>season_length</code></strong>:<code>int</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
-</blockquote>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">y_df</span> <span class="o">=</span> <span class="n">ys</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
-<span class="n">y_df</span><span class="p">[</span><span class="s1">&#39;season&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">7</span><span class="p">)[[</span><span class="n">i</span> <span class="o">%</span> <span class="mi">7</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)]]</span>
-<span class="n">grouped_y</span> <span class="o">=</span> <span class="n">y_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;season&#39;</span><span class="p">)[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
-</pre></div>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 
-    </div>
-</div>
-</div>
+<span class="n">season_length</span> <span class="o">=</span> <span class="mi">7</span>
 
-</div>
-    {% endraw %}
 
-    {% raw %}
+<span class="k">def</span> <span class="nf">test_seasonal_rolling_vs_pandas</span><span class="p">(</span><span class="n">seasonal_rolling</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+                                    <span class="n">pandas_aggregation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                    <span class="n">lower_bound_for_min_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                                    <span class="n">non_na_values</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">window_size</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
-<span class="n">min_samples</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">window_size</span><span class="p">)</span>
-
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">grouped_y</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">y</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                   <span class="n">seasonal_rolling_mean</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="p">),</span>
-                   <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
+    <span class="n">window_size</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="n">min_samples</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">window_size</span><span class="p">)</span>
     
-<div class="cell border-box-sizing code_cell rendered">
+    <span class="c1"># expanding for [min_samples, window_size), rolling for [window_size, n_samples]</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+        <span class="n">seasonal_rolling</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">lower_bound_for_min_samples</span><span class="p">),</span> 
+        <span class="n">grouped_series</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">lower_bound_for_min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">pandas_aggregation</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
 
-<div class="output_wrapper">
-<div class="output">
+    <span class="c1"># arbitrary min_samples and window_size</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+        <span class="n">seasonal_rolling</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_samples</span><span class="p">),</span> 
+        <span class="n">grouped_series</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">pandas_aggregation</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
 
-<div class="output_area">
+    <span class="c1"># min_samples = window_size</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+        <span class="n">seasonal_rolling</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="n">window_size</span><span class="p">),</span>
+        <span class="n">grouped_series</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">pandas_aggregation</span><span class="p">))</span>
+    <span class="p">)</span>
 
+    <span class="c1"># skip nas</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+        <span class="n">seasonal_rolling</span><span class="p">(</span><span class="n">array_with_nans</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_samples</span><span class="p">),</span>
+        <span class="n">grouped_series_with_nans</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">pandas_aggregation</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
 
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="seasonal_rolling_std" class="doc_header"><code>seasonal_rolling_std</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L93" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>seasonal_rolling_std</code>(<strong><code>x</code></strong>:<code>ndarray</code>, <strong><code>season_length</code></strong>:<code>int</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
-</blockquote>
+    <span class="c1"># |non-na-values| &lt; min_samples</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+        <span class="n">seasonal_rolling</span><span class="p">(</span>
+            <span class="n">array_with_nans</span><span class="p">[:</span><span class="n">number_of_nans</span> <span class="o">+</span> <span class="n">non_na_values</span><span class="p">],</span>
+            <span class="n">window_size</span><span class="o">=</span><span class="n">non_na_values</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">min_samples</span><span class="o">=</span><span class="n">non_na_values</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">all_nans_array</span><span class="p">[:</span><span class="n">number_of_nans</span> <span class="o">+</span> <span class="n">non_na_values</span><span class="p">]</span>
+    <span class="p">)</span>
 
-</div>
+    <span class="c1"># min_samples &lt; |non-na-values| &lt; window_size</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+        <span class="n">seasonal_rolling</span><span class="p">(</span>
+            <span class="n">array_with_nans</span><span class="p">[:</span><span class="n">number_of_nans</span> <span class="o">+</span> <span class="n">lower_bound_for_min_samples</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">season_length</span><span class="p">],</span> 
+            <span class="n">window_size</span><span class="o">=</span><span class="n">lower_bound_for_min_samples</span><span class="o">+</span><span class="mi">1</span><span class="o">*</span><span class="n">season_length</span><span class="p">,</span>
+            <span class="n">min_samples</span><span class="o">=</span><span class="n">lower_bound_for_min_samples</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span>
+            <span class="n">all_nans_array</span><span class="p">[:</span><span class="n">number_of_nans</span><span class="p">],</span> 
+            <span class="n">seasonal_rolling</span><span class="p">(</span>
+                <span class="n">array_with_nans</span><span class="p">[</span><span class="n">number_of_nans</span> <span class="p">:</span> <span class="n">number_of_nans</span><span class="o">+</span><span class="n">lower_bound_for_min_samples</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">season_length</span><span class="p">],</span> 
+                <span class="n">window_size</span><span class="o">=</span><span class="n">lower_bound_for_min_samples</span><span class="o">+</span><span class="mi">1</span><span class="o">*</span><span class="n">season_length</span><span class="p">,</span>
+                <span class="n">min_samples</span><span class="o">=</span><span class="n">lower_bound_for_min_samples</span><span class="p">)</span>
+        <span class="p">))</span>
+    <span class="p">)</span>
 
-</div>
+    <span class="c1"># all-nan -&gt; all-nan</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span>
+        <span class="n">seasonal_rolling</span><span class="p">(</span><span class="n">all_nans_array</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_samples</span><span class="p">),</span>
+        <span class="n">all_nans_array</span>
+    <span class="p">)</span>
 
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
     
-<div class="cell border-box-sizing code_cell rendered">
+<span class="k">def</span> <span class="nf">get_seasons</span><span class="p">(</span><span class="n">season_length</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span> <span class="o">%</span> <span class="n">season_length</span>
 
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">window_size</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
-<span class="n">min_samples</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">window_size</span><span class="p">)</span>
-
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">grouped_y</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">y</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">std</span><span class="p">())</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                   <span class="n">seasonal_rolling_std</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="p">),</span>
-                   <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">grouped_series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">get_seasons</span><span class="p">(</span><span class="n">season_length</span><span class="p">,</span> <span class="n">series</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+<span class="n">grouped_series_with_nans</span> <span class="o">=</span> <span class="n">series_with_nans</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">get_seasons</span><span class="p">(</span><span class="n">season_length</span><span class="p">,</span> <span class="n">series_with_nans</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -442,8 +489,10 @@ nb_path: "nbs/rolling.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="seasonal_rolling_max" class="doc_header"><code>seasonal_rolling_max</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L101" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>seasonal_rolling_max</code>(<strong><code>x</code></strong>:<code>ndarray</code>, <strong><code>season_length</code></strong>:<code>int</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
+<h4 id="seasonal_rolling_mean" class="doc_header"><code>seasonal_rolling_mean</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L168" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>seasonal_rolling_mean</code>(<strong><code>input_array</code></strong>:<code>ndarray</code>, <strong><code>season_length</code></strong>:<code>int</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
 </blockquote>
+<p>Compute the seasonal_rolling_mean over the last non-na window_size samples of the
+input array starting at min_samples.</p>
 
 </div>
 
@@ -469,12 +518,7 @@ nb_path: "nbs/rolling.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">window_size</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
-<span class="n">min_samples</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">window_size</span><span class="p">)</span>
-
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">grouped_y</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">y</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                   <span class="n">seasonal_rolling_max</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="p">),</span>
-                   <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_seasonal_rolling_vs_pandas</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">seasonal_rolling_mean</span><span class="p">,</span> <span class="n">season_length</span><span class="o">=</span><span class="n">season_length</span><span class="p">),</span> <span class="s1">&#39;mean&#39;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -495,8 +539,10 @@ nb_path: "nbs/rolling.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="seasonal_rolling_min" class="doc_header"><code>seasonal_rolling_min</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L109" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>seasonal_rolling_min</code>(<strong><code>x</code></strong>:<code>ndarray</code>, <strong><code>season_length</code></strong>:<code>int</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
+<h4 id="seasonal_rolling_std" class="doc_header"><code>seasonal_rolling_std</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L176" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>seasonal_rolling_std</code>(<strong><code>input_array</code></strong>:<code>ndarray</code>, <strong><code>season_length</code></strong>:<code>int</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
 </blockquote>
+<p>Compute the seasonal_rolling_std over the last non-na window_size samples of the
+input array starting at min_samples.</p>
 
 </div>
 
@@ -522,12 +568,107 @@ nb_path: "nbs/rolling.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">window_size</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
-<span class="n">min_samples</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">window_size</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_seasonal_rolling_vs_pandas</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">seasonal_rolling_std</span><span class="p">,</span> <span class="n">season_length</span><span class="o">=</span><span class="n">season_length</span><span class="p">),</span> <span class="s1">&#39;std&#39;</span><span class="p">,</span> <span class="n">lower_bound_for_min_samples</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
 
-<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">grouped_y</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">y</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_samples</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">())</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                   <span class="n">seasonal_rolling_min</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">min_samples</span><span class="p">),</span>
-                   <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="seasonal_rolling_max" class="doc_header"><code>seasonal_rolling_max</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L184" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>seasonal_rolling_max</code>(<strong><code>input_array</code></strong>:<code>ndarray</code>, <strong><code>season_length</code></strong>:<code>int</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
+</blockquote>
+<p>Compute the seasonal_rolling_max over the last non-na window_size samples of the
+input array starting at min_samples.</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_seasonal_rolling_vs_pandas</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">seasonal_rolling_max</span><span class="p">,</span> <span class="n">season_length</span><span class="o">=</span><span class="n">season_length</span><span class="p">),</span> <span class="s1">&#39;max&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="seasonal_rolling_min" class="doc_header"><code>seasonal_rolling_min</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/rolling.py#L192" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>seasonal_rolling_min</code>(<strong><code>x</code></strong>:<code>ndarray</code>, <strong><code>season_length</code></strong>:<code>int</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>)</p>
+</blockquote>
+<p>Compute the seasonal_rolling_min over the last non-na window_size samples of the
+input array starting at min_samples.</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_seasonal_rolling_vs_pandas</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">seasonal_rolling_min</span><span class="p">,</span> <span class="n">season_length</span><span class="o">=</span><span class="n">season_length</span><span class="p">),</span> <span class="s1">&#39;min&#39;</span><span class="p">)</span>
 </pre></div>
 
     </div>

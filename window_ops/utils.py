@@ -25,31 +25,6 @@ def _validate_rolling_sizes(n_samples: int,
     return window_size, min_samples
 
 @njit
-def _rolling_std(x: np.ndarray,
-                 window_size: int,
-                 min_samples: Optional[int] = None) -> np.ndarray:
-    n_samples = x.size
-    window_size, min_samples = _validate_rolling_sizes(n_samples, window_size, min_samples)
-    if min_samples < 2:
-        raise ValueError('min_samples must be greater than 1')
-    out = np.full(n_samples, np.nan, dtype=np.float32)
-    prev_avg = 0.
-    curr_avg = x[0]
-    x_m2n = 0.
-    for i in range(1, window_size):
-        prev_avg = curr_avg
-        curr_avg = prev_avg + (x[i] - prev_avg) / (i + 1)
-        x_m2n += (x[i] - prev_avg) * (x[i] - curr_avg)
-        if i + 1 >= min_samples:
-            out[i] = sqrt(x_m2n / i)
-    for i in range(window_size, n_samples):
-        prev_avg = curr_avg
-        curr_avg = prev_avg + (x[i] - x[i-window_size]) / window_size
-        x_m2n += (x[i] - x[i-window_size]) * (x[i] - curr_avg + x[i-window_size] - prev_avg)
-        out[i] = sqrt(x_m2n / (window_size - 1))
-    return out, curr_avg, x_m2n
-
-@njit
 def _gt(x: float, y: float) -> float:
     return x - y
 
