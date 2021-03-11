@@ -79,6 +79,7 @@ class RollingStd(BaseOnlineRolling):
         self.curr_avg = prev_avg + new_minus_old / self.window_size
         self.m2 += new_minus_old * (x - self.curr_avg + self.x[0] - prev_avg)
         self._update_x(x)
+        self.m2 = max(self.m2, 0) # loss of precision
         return sqrt(self.m2 / (self.window_size - 1))
 
 # Internal Cell
