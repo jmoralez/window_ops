@@ -290,45 +290,6 @@ nb_path: "nbs/online.ipynb"
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># class BaseOnlineSeasonalRolling:</span>
-    
-<span class="c1">#     def __init__(self,</span>
-<span class="c1">#                  seasonal_rolling_op: Callable,</span>
-<span class="c1">#                  season_length: int,</span>
-<span class="c1">#                  window_size: int,</span>
-<span class="c1">#                  min_samples: Optional[int] = None):</span>
-<span class="c1">#         self.seasonal_rolling_op = seasonal_rolling_op</span>
-<span class="c1">#         self.season_length = season_length</span>
-<span class="c1">#         self.window_size = window_size</span>
-<span class="c1">#         self.min_samples = min_samples</span>
-        
-<span class="c1">#     def fit_transform(self, x: np.ndarray) -&gt; np.ndarray:</span>
-<span class="c1">#         n_samples = x.size</span>
-<span class="c1">#         min_samples = self.season_length * self.window_size</span>
-<span class="c1">#         if n_samples &lt; min_samples:</span>
-<span class="c1">#             return np.full(n_samples, np.nan)</span>
-<span class="c1">#         self.x = x[-min_samples:].tolist()</span>
-<span class="c1">#         return self.seasonal_rolling_op(x, self.season_length, self.window_size, self.min_samples)</span>
-    
-<span class="c1">#     def _update_and_get_seasonal_terms(self, x: float) -&gt; List[float]:</span>
-<span class="c1">#         self.x = self.x[1:] + [x]</span>
-<span class="c1">#         return self.x[self.season_length-1::self.season_length]</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
 
 <div class="output_wrapper">
 <div class="output">
@@ -433,7 +394,7 @@ nb_path: "nbs/online.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="SeasonalRollingMin" class="doc_header"><code>class</code> <code>SeasonalRollingMin</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L148" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SeasonalRollingMin</code>(<strong><code>season_length</code></strong>:<code>int</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>) :: <a href="/window_ops/online.html#BaseOnlineSeasonalRolling"><code>BaseOnlineSeasonalRolling</code></a></p>
+<h2 id="SeasonalRollingMin" class="doc_header"><code>class</code> <code>SeasonalRollingMin</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L131" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SeasonalRollingMin</code>(<strong><code>season_length</code></strong>:<code>int</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>) :: <a href="/window_ops/online.html#BaseOnlineSeasonalRolling"><code>BaseOnlineSeasonalRolling</code></a></p>
 </blockquote>
 
 </div>
@@ -481,7 +442,7 @@ nb_path: "nbs/online.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="SeasonalRollingMax" class="doc_header"><code>class</code> <code>SeasonalRollingMax</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L161" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SeasonalRollingMax</code>(<strong><code>season_length</code></strong>:<code>int</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>) :: <a href="/window_ops/online.html#BaseOnlineSeasonalRolling"><code>BaseOnlineSeasonalRolling</code></a></p>
+<h2 id="SeasonalRollingMax" class="doc_header"><code>class</code> <code>SeasonalRollingMax</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L140" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SeasonalRollingMax</code>(<strong><code>season_length</code></strong>:<code>int</code>, <strong><code>window_size</code></strong>:<code>int</code>, <strong><code>min_samples</code></strong>:<code>Optional</code>[<code>int</code>]=<em><code>None</code></em>) :: <a href="/window_ops/online.html#BaseOnlineSeasonalRolling"><code>BaseOnlineSeasonalRolling</code></a></p>
 </blockquote>
 
 </div>
@@ -541,7 +502,7 @@ nb_path: "nbs/online.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="ExpandingMean" class="doc_header"><code>class</code> <code>ExpandingMean</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L174" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ExpandingMean</code>()</p>
+<h2 id="ExpandingMean" class="doc_header"><code>class</code> <code>ExpandingMean</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L149" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ExpandingMean</code>()</p>
 </blockquote>
 
 </div>
@@ -607,7 +568,7 @@ nb_path: "nbs/online.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="ExpandingMax" class="doc_header"><code>class</code> <code>ExpandingMax</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L188" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ExpandingMax</code>()</p>
+<h2 id="ExpandingMax" class="doc_header"><code>class</code> <code>ExpandingMax</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L163" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ExpandingMax</code>()</p>
 </blockquote>
 
 </div>
@@ -655,7 +616,7 @@ nb_path: "nbs/online.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="ExpandingMin" class="doc_header"><code>class</code> <code>ExpandingMin</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L201" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ExpandingMin</code>()</p>
+<h2 id="ExpandingMin" class="doc_header"><code>class</code> <code>ExpandingMin</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L176" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ExpandingMin</code>()</p>
 </blockquote>
 
 </div>
@@ -703,7 +664,7 @@ nb_path: "nbs/online.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="ExpandingStd" class="doc_header"><code>class</code> <code>ExpandingStd</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L214" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ExpandingStd</code>()</p>
+<h2 id="ExpandingStd" class="doc_header"><code>class</code> <code>ExpandingStd</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L189" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ExpandingStd</code>()</p>
 </blockquote>
 
 </div>
@@ -757,7 +718,7 @@ nb_path: "nbs/online.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="SeasonalExpandingMean" class="doc_header"><code>class</code> <code>SeasonalExpandingMean</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L255" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SeasonalExpandingMean</code>(<strong><code>season_length</code></strong>:<code>int</code>) :: <a href="/window_ops/online.html#BaseSeasonalExpanding"><code>BaseSeasonalExpanding</code></a></p>
+<h2 id="SeasonalExpandingMean" class="doc_header"><code>class</code> <code>SeasonalExpandingMean</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L230" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SeasonalExpandingMean</code>(<strong><code>season_length</code></strong>:<code>int</code>) :: <a href="/window_ops/online.html#BaseSeasonalExpanding"><code>BaseSeasonalExpanding</code></a></p>
 </blockquote>
 
 </div>
@@ -805,7 +766,7 @@ nb_path: "nbs/online.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="SeasonalExpandingStd" class="doc_header"><code>class</code> <code>SeasonalExpandingStd</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L261" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SeasonalExpandingStd</code>(<strong><code>season_length</code></strong>:<code>int</code>) :: <a href="/window_ops/online.html#BaseSeasonalExpanding"><code>BaseSeasonalExpanding</code></a></p>
+<h2 id="SeasonalExpandingStd" class="doc_header"><code>class</code> <code>SeasonalExpandingStd</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L236" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SeasonalExpandingStd</code>(<strong><code>season_length</code></strong>:<code>int</code>) :: <a href="/window_ops/online.html#BaseSeasonalExpanding"><code>BaseSeasonalExpanding</code></a></p>
 </blockquote>
 
 </div>
@@ -853,7 +814,7 @@ nb_path: "nbs/online.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="SeasonalExpandingMin" class="doc_header"><code>class</code> <code>SeasonalExpandingMin</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L267" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SeasonalExpandingMin</code>(<strong><code>season_length</code></strong>:<code>int</code>) :: <a href="/window_ops/online.html#BaseSeasonalExpanding"><code>BaseSeasonalExpanding</code></a></p>
+<h2 id="SeasonalExpandingMin" class="doc_header"><code>class</code> <code>SeasonalExpandingMin</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L242" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SeasonalExpandingMin</code>(<strong><code>season_length</code></strong>:<code>int</code>) :: <a href="/window_ops/online.html#BaseSeasonalExpanding"><code>BaseSeasonalExpanding</code></a></p>
 </blockquote>
 
 </div>
@@ -901,7 +862,7 @@ nb_path: "nbs/online.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="SeasonalExpandingMax" class="doc_header"><code>class</code> <code>SeasonalExpandingMax</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L273" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SeasonalExpandingMax</code>(<strong><code>season_length</code></strong>:<code>int</code>) :: <a href="/window_ops/online.html#BaseSeasonalExpanding"><code>BaseSeasonalExpanding</code></a></p>
+<h2 id="SeasonalExpandingMax" class="doc_header"><code>class</code> <code>SeasonalExpandingMax</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L248" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SeasonalExpandingMax</code>(<strong><code>season_length</code></strong>:<code>int</code>) :: <a href="/window_ops/online.html#BaseSeasonalExpanding"><code>BaseSeasonalExpanding</code></a></p>
 </blockquote>
 
 </div>
@@ -955,7 +916,7 @@ nb_path: "nbs/online.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="EWMMean" class="doc_header"><code>class</code> <code>EWMMean</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L279" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>EWMMean</code>(<strong><code>alpha</code></strong>)</p>
+<h2 id="EWMMean" class="doc_header"><code>class</code> <code>EWMMean</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L254" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>EWMMean</code>(<strong><code>alpha</code></strong>)</p>
 </blockquote>
 
 </div>
@@ -1009,7 +970,7 @@ nb_path: "nbs/online.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="Shift" class="doc_header"><code>class</code> <code>Shift</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L294" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Shift</code>(<strong><code>offset</code></strong>:<code>int</code>)</p>
+<h2 id="Shift" class="doc_header"><code>class</code> <code>Shift</code><a href="https://github.com/jose-moralez/window_ops/tree/master/window_ops/online.py#L269" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Shift</code>(<strong><code>offset</code></strong>:<code>int</code>)</p>
 </blockquote>
 
 </div>
