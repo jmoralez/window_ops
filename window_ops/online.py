@@ -59,7 +59,7 @@ class RollingMin(BaseOnlineRolling):
         super().__init__(rolling_min, window_size, min_samples)
 
     def update(self, x) -> float:
-        self.x = self.x[1:] + [x]
+        self._update_x(x)
         return min(self.x)
 
 # Cell
@@ -127,23 +127,6 @@ class SeasonalRollingStd(BaseOnlineSeasonalRolling):
                  min_samples: Optional[int] = None):
         super().__init__(RollingStd, season_length, window_size, min_samples)
 
-#     def fit_transform(self, x: np.ndarray) -> np.ndarray:
-#         n_samples = x.size
-#         output_array = np.full_like(x, np.nan)
-#         self.curr_avgs = []
-#         self.m2s= []
-#         for season in range(self.season_length):
-#             season_slice = slice(season, n_samples, self.season_length)
-#             result, curr_avg, m2 = _rolling_std(x[season_slice], self.window_size, self.min_samples)
-#             output_array[season_slice] = result
-#             self.curr_avgs.append(curr_avg)
-#             self.m2s.append(m2)
-
-#     def update(self, x: float) -> float:
-
-#         seasonal_terms = self._update_and_get_seasonal_terms(x)
-#         return np.std(seasonal_terms, ddof=1).item()
-
 # Cell
 class SeasonalRollingMin(BaseOnlineSeasonalRolling):
 
@@ -153,10 +136,6 @@ class SeasonalRollingMin(BaseOnlineSeasonalRolling):
                  min_samples: Optional[int] = None):
         super().__init__(RollingMin, season_length, window_size, min_samples)
 
-#     def update(self, x: float) -> float:
-#         seasonal_terms = self._update_and_get_seasonal_terms(x)
-#         return min(seasonal_terms)
-
 # Cell
 class SeasonalRollingMax(BaseOnlineSeasonalRolling):
 
@@ -165,10 +144,6 @@ class SeasonalRollingMax(BaseOnlineSeasonalRolling):
                  window_size: int,
                  min_samples: Optional[int] = None):
         super().__init__(RollingMax, season_length, window_size, min_samples)
-
-#     def update(self, x: float) -> float:
-#         seasonal_terms = self._update_and_get_seasonal_terms(x)
-#         return max(seasonal_terms)
 
 # Cell
 class ExpandingMean:
