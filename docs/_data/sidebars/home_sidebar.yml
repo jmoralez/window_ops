@@ -22,6 +22,9 @@ entries:
       title: Rolling
       url: rolling.html
     - output: web,pdf
+      title: Shift
+      url: shift.html
+    - output: web,pdf
       title: Utils
       url: utils.html
     output: web

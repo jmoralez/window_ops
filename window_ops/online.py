@@ -2,7 +2,8 @@
 
 __all__ = ['RollingMean', 'RollingMax', 'RollingMin', 'RollingStd', 'SeasonalRollingMean', 'SeasonalRollingStd',
            'SeasonalRollingMin', 'SeasonalRollingMax', 'ExpandingMean', 'ExpandingMax', 'ExpandingMin', 'ExpandingStd',
-           'SeasonalExpandingMean', 'SeasonalExpandingStd', 'SeasonalExpandingMin', 'SeasonalExpandingMax', 'EWMMean']
+           'SeasonalExpandingMean', 'SeasonalExpandingStd', 'SeasonalExpandingMin', 'SeasonalExpandingMax', 'EWMMean',
+           'Shift']
 
 # Cell
 from math import ceil, sqrt
@@ -13,6 +14,8 @@ import numpy as np
 from .expanding import *
 from .ewm import *
 from .rolling import *
+from .rolling import _rolling_std
+from .shift import shift_array
 
 # Internal Cell
 class BaseOnlineRolling:
@@ -26,7 +29,7 @@ class BaseOnlineRolling:
         self.x = x[-self.window_size:].tolist()
         return self.rolling_op(x, self.window_size, self.min_samples)
 
-    def _update_x(self, x: np.ndarray) -> None:
+    def _update_x(self, x: float) -> None:
         self.x = self.x[1:] + [x]
 
 # Cell
@@ -52,7 +55,7 @@ class RollingMax(BaseOnlineRolling):
 # Cell
 class RollingMin(BaseOnlineRolling):
 
-    def __init__(self, window_size, min_samples):
+    def __init__(self, window_size: int, min_samples: Optional[int] = None):
         super().__init__(rolling_min, window_size, min_samples)
 
     def update(self, x) -> float:
@@ -62,37 +65,49 @@ class RollingMin(BaseOnlineRolling):
 # Cell
 class RollingStd(BaseOnlineRolling):
 
-    def __init__(self, window_size, min_samples):
+    def __init__(self, window_size: int, min_samples: Optional[int] = None):
         super().__init__(rolling_std, window_size, min_samples)
 
+    def fit_transform(self, x: np.ndarray) -> np.ndarray:
+        result, self.curr_avg, self.m2 = _rolling_std(x, self.window_size, self.min_samples)
+        self.x = x[-self.window_size:].tolist()
+        return result
+
     def update(self, x) -> float:
+        prev_avg = self.curr_avg
+        new_minus_old = x - self.x[0]
+        self.curr_avg = prev_avg + new_minus_old / self.window_size
+        self.m2 += new_minus_old * (x - self.curr_avg + self.x[0] - prev_avg)
         self._update_x(x)
-        return np.std(self.x, ddof=1)
+        return sqrt(self.m2 / (self.window_size - 1))
 
 # Internal Cell
 class BaseOnlineSeasonalRolling:
 
     def __init__(self,
-                 seasonal_rolling_op: Callable,
+                 RollingOp: type,
                  season_length: int,
                  window_size: int,
                  min_samples: Optional[int] = None):
-        self.seasonal_rolling_op = seasonal_rolling_op
+        self.RollingOp = RollingOp
         self.season_length = season_length
         self.window_size = window_size
         self.min_samples = min_samples
 
     def fit_transform(self, x: np.ndarray) -> np.ndarray:
-        n_samples = x.size
-        min_samples = self.season_length * self.window_size
-        if n_samples < min_samples:
-            return np.full(n_samples, np.nan)
-        self.x = x[-min_samples:].tolist()
-        return self.seasonal_rolling_op(x, self.season_length, self.window_size, self.min_samples)
+        self.rolling_ops = []
+        self.n_samples = x.size
+        result = np.full_like(x, np.nan)
+        for season in range(self.season_length):
+            rolling_op = self.RollingOp(window_size=self.window_size, min_samples=self.min_samples)
+            result[season::self.season_length] = rolling_op.fit_transform(x[season::self.season_length])
+            self.rolling_ops.append(rolling_op)
+        return result
 
-    def _update_and_get_seasonal_terms(self, x: float) -> List[float]:
-        self.x = self.x[1:] + [x]
-        return self.x[self.season_length-1::self.season_length]
+    def update(self, x: float) -> float:
+        season = self.n_samples % self.season_length
+        self.n_samples += 1
+        return self.rolling_ops[season].update(x)
 
 # Cell
 class SeasonalRollingMean(BaseOnlineSeasonalRolling):
@@ -101,11 +116,7 @@ class SeasonalRollingMean(BaseOnlineSeasonalRolling):
                  season_length: int,
                  window_size: int,
                  min_samples: Optional[int] = None):
-        super().__init__(seasonal_rolling_mean, season_length, window_size, min_samples)
-
-    def update(self, x: float) -> float:
-        seasonal_terms = self._update_and_get_seasonal_terms(x)
-        return sum(seasonal_terms) / self.window_size
+        super().__init__(RollingMean, season_length, window_size, min_samples)
 
 # Cell
 class SeasonalRollingStd(BaseOnlineSeasonalRolling):
@@ -114,11 +125,24 @@ class SeasonalRollingStd(BaseOnlineSeasonalRolling):
                  season_length: int,
                  window_size: int,
                  min_samples: Optional[int] = None):
-        super().__init__(seasonal_rolling_std, season_length, window_size, min_samples)
+        super().__init__(RollingStd, season_length, window_size, min_samples)
 
-    def update(self, x: float) -> float:
-        seasonal_terms = self._update_and_get_seasonal_terms(x)
-        return np.std(seasonal_terms, ddof=1)
+#     def fit_transform(self, x: np.ndarray) -> np.ndarray:
+#         n_samples = x.size
+#         output_array = np.full_like(x, np.nan)
+#         self.curr_avgs = []
+#         self.m2s= []
+#         for season in range(self.season_length):
+#             season_slice = slice(season, n_samples, self.season_length)
+#             result, curr_avg, m2 = _rolling_std(x[season_slice], self.window_size, self.min_samples)
+#             output_array[season_slice] = result
+#             self.curr_avgs.append(curr_avg)
+#             self.m2s.append(m2)
+
+#     def update(self, x: float) -> float:
+
+#         seasonal_terms = self._update_and_get_seasonal_terms(x)
+#         return np.std(seasonal_terms, ddof=1).item()
 
 # Cell
 class SeasonalRollingMin(BaseOnlineSeasonalRolling):
@@ -127,11 +151,11 @@ class SeasonalRollingMin(BaseOnlineSeasonalRolling):
                  season_length: int,
                  window_size: int,
                  min_samples: Optional[int] = None):
-        super().__init__(seasonal_rolling_min, season_length, window_size, min_samples)
+        super().__init__(RollingMin, season_length, window_size, min_samples)
 
-    def update(self, x: float) -> float:
-        seasonal_terms = self._update_and_get_seasonal_terms(x)
-        return min(seasonal_terms)
+#     def update(self, x: float) -> float:
+#         seasonal_terms = self._update_and_get_seasonal_terms(x)
+#         return min(seasonal_terms)
 
 # Cell
 class SeasonalRollingMax(BaseOnlineSeasonalRolling):
@@ -140,11 +164,11 @@ class SeasonalRollingMax(BaseOnlineSeasonalRolling):
                  season_length: int,
                  window_size: int,
                  min_samples: Optional[int] = None):
-        super().__init__(seasonal_rolling_max, season_length, window_size, min_samples)
+        super().__init__(RollingMax, season_length, window_size, min_samples)
 
-    def update(self, x: float) -> float:
-        seasonal_terms = self._update_and_get_seasonal_terms(x)
-        return max(seasonal_terms)
+#     def update(self, x: float) -> float:
+#         seasonal_terms = self._update_and_get_seasonal_terms(x)
+#         return max(seasonal_terms)
 
 # Cell
 class ExpandingMean:
@@ -207,7 +231,7 @@ class ExpandingStd:
 class BaseSeasonalExpanding:
 
     def __init__(self,
-                 ExpandingOp: Union[ExpandingMean, ExpandingMax, ExpandingMin, ExpandingStd],
+                 ExpandingOp: type,
                  season_length: int):
         self.ExpandingOp = ExpandingOp
         self.season_length = season_length
@@ -230,26 +254,26 @@ class BaseSeasonalExpanding:
 # Cell
 class SeasonalExpandingMean(BaseSeasonalExpanding):
 
-    def __init__(self, season_length):
-        super().__init__(ExpandingMean, 7)
+    def __init__(self, season_length: int):
+        super().__init__(ExpandingMean, season_length)
 
 # Cell
 class SeasonalExpandingStd(BaseSeasonalExpanding):
 
-    def __init__(self, season_length):
-        super().__init__(ExpandingStd, 7)
+    def __init__(self, season_length: int):
+        super().__init__(ExpandingStd, season_length)
 
 # Cell
 class SeasonalExpandingMin(BaseSeasonalExpanding):
 
-    def __init__(self, season_length):
-        super().__init__(ExpandingMin, 7)
+    def __init__(self, season_length: int):
+        super().__init__(ExpandingMin, season_length)
 
 # Cell
 class SeasonalExpandingMax(BaseSeasonalExpanding):
 
-    def __init__(self, season_length):
-        super().__init__(ExpandingMax, 7)
+    def __init__(self, season_length: int):
+        super().__init__(ExpandingMax, season_length)
 
 # Cell
 class EWMMean:
@@ -265,3 +289,23 @@ class EWMMean:
     def update(self, x):
         self.smoothed = self.alpha * x + (1 - self.alpha) * self.smoothed
         return self.smoothed
+
+# Cell
+class Shift:
+
+    def __init__(self, offset: int):
+        if offset <= 0:
+            raise ValueError('offset must be positive.')
+        self.offset = offset
+
+    def fit_transform(self, x: np.ndarray) -> np.ndarray:
+        self.x = x[-self.offset:].tolist()
+        return shift_array(x, self.offset)
+
+    def _update_x(self, x: float) -> None:
+        self.x = self.x[1:] + [x]
+
+    def update(self, x: float) -> float:
+        result = self.x[0]
+        self._update_x(x)
+        return result

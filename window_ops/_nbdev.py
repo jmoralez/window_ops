@@ -31,6 +31,7 @@ index = {"ewm_mean": "ewm.ipynb",
          "SeasonalExpandingMin": "online.ipynb",
          "SeasonalExpandingMax": "online.ipynb",
          "EWMMean": "online.ipynb",
+         "Shift": "online.ipynb",
          "rolling_docstring": "rolling.ipynb",
          "rolling_mean": "rolling.ipynb",
          "rolling_std": "rolling.ipynb",
@@ -39,12 +40,15 @@ index = {"ewm_mean": "ewm.ipynb",
          "seasonal_rolling_mean": "rolling.ipynb",
          "seasonal_rolling_std": "rolling.ipynb",
          "seasonal_rolling_max": "rolling.ipynb",
-         "seasonal_rolling_min": "rolling.ipynb"}
+         "seasonal_rolling_min": "rolling.ipynb",
+         "shift_array": "shift.ipynb",
+         "first_not_na": "utils.ipynb"}
 
 modules = ["ewm.py",
            "expanding.py",
            "online.py",
            "rolling.py",
+           "shift.py",
            "utils.py"]
 
 doc_url = "https://jose-moralez.github.io/window_ops/"

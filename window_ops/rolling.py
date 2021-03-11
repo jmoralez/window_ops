@@ -5,23 +5,14 @@ __all__ = ['rolling_mean', 'rolling_std', 'rolling_max', 'rolling_min', 'seasona
 
 # Cell
 from math import sqrt
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
 
 import numpy as np
-from numba import njit
+from numba import njit  # type: ignore
 
-from .utils import _gt, _lt, _validate_rolling_sizes
+from .utils import _gt, _lt, _validate_rolling_sizes, first_not_na
 
 # Internal Cell
-@njit
-def _first_not_nan(input_array: np.ndarray) -> int:
-    """Returns the index of the first non-na value in the array."""
-    for index, element in enumerate(input_array):
-        if not np.isnan(element):
-            return index
-    return input_array.size
-
-
 def rolling_docstring(*args, **kwargs) -> Callable:
     base_docstring = """
         Compute the {} over the last non-na window_size samples of the
@@ -43,7 +34,7 @@ def rolling_mean(input_array: np.ndarray,
     window_size, min_samples = _validate_rolling_sizes(n_samples, window_size, min_samples)
 
     output_array = np.full_like(input_array, np.nan)
-    start_idx = _first_not_nan(input_array)
+    start_idx = first_not_na(input_array)
     if start_idx + min_samples >= n_samples:
         return output_array
 
@@ -64,17 +55,17 @@ def rolling_mean(input_array: np.ndarray,
 @njit
 def _rolling_std(input_array: np.ndarray,
                  window_size: int,
-                 min_samples: Optional[int] = None) -> np.ndarray:
+                 min_samples: Optional[int] = None) -> Tuple[np.ndarray, float, float]:
     """Computes the rolling standard deviation using Welford's online algorithm.
 
     Reference: https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm"""
     n_samples = input_array.size
     window_size, min_samples = _validate_rolling_sizes(n_samples, window_size, min_samples)
-    if min_samples < 2:
+    if min_samples < 2:  # type: ignore
         raise ValueError('min_samples must be greater than 1.')
 
     output_array = np.full_like(input_array, np.nan)
-    start_idx = _first_not_nan(input_array)
+    start_idx = first_not_na(input_array)
     if start_idx + min_samples >= n_samples:
         return output_array, 0, 0
 
@@ -91,8 +82,9 @@ def _rolling_std(input_array: np.ndarray,
 
     for i in range(start_idx + window_size, n_samples):
         prev_avg = curr_avg
-        curr_avg = prev_avg + (input_array[i] - input_array[i-window_size]) / window_size
-        m2 += (input_array[i] - input_array[i-window_size]) * (input_array[i] - curr_avg + input_array[i-window_size] - prev_avg)
+        new_minus_old = input_array[i] - input_array[i-window_size]
+        curr_avg = prev_avg + new_minus_old / window_size
+        m2 += new_minus_old * (input_array[i] - curr_avg + input_array[i-window_size] - prev_avg)
         output_array[i] = sqrt(m2 / (window_size - 1))
 
     return output_array, curr_avg, m2
@@ -116,7 +108,7 @@ def _rolling_comp(comp: Callable,
     window_size, min_samples = _validate_rolling_sizes(n_samples, window_size, min_samples)
 
     output_array = np.full_like(input_array, np.nan)
-    start_idx = _first_not_nan(input_array)
+    start_idx = first_not_na(input_array)
     if start_idx + min_samples >= n_samples:
         return output_array
 

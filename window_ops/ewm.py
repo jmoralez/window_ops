@@ -6,14 +6,19 @@ __all__ = ['ewm_mean']
 import random
 
 import numpy as np
-from numba import njit
+from numba import njit  # type: ignore
+
+from .utils import first_not_na
 
 # Cell
 @njit
-def ewm_mean(x: np.ndarray, alpha: float) -> np.ndarray:
-    n = x.size
-    out = np.empty(n, dtype=np.float32)
-    out[0] = x[0]
-    for i in range(1, n):
-        out[i] = alpha * x[i] + (1-alpha) * out[i-1]
-    return out
+def ewm_mean(input_array: np.ndarray, alpha: float) -> np.ndarray:
+    n_samples = input_array.size
+    output_array = np.full_like(input_array, np.nan)
+    start_idx = first_not_na(input_array)
+    if start_idx >= n_samples:
+        return output_array
+    output_array[start_idx] = input_array[start_idx]
+    for i in range(start_idx + 1, n_samples):
+        output_array[i] = alpha * input_array[i] + (1-alpha) * output_array[i-1]
+    return output_array

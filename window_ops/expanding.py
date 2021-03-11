@@ -8,10 +8,9 @@ from math import sqrt
 from typing import Callable, Optional
 
 import numpy as np
-from numba import njit
+from numba import njit  # type: ignore
 
 from .rolling import *
-from .utils import _gt, _lt
 
 # Internal Cell
 def _expanding_op(rolling_op: Callable, x: np.ndarray, min_samples: int = 1) -> np.ndarray:
@@ -19,34 +18,20 @@ def _expanding_op(rolling_op: Callable, x: np.ndarray, min_samples: int = 1) -> 
     return rolling_op(x, window_size=n_samples, min_samples=min_samples)
 
 # Cell
-def expanding_mean(x: np.ndarray) -> np.ndarray:
-    return _expanding_op(rolling_mean, x)
+def expanding_mean(input_array: np.ndarray) -> np.ndarray:
+    return _expanding_op(rolling_mean, input_array)
 
 # Cell
-def expanding_std(x: np.ndarray) -> np.ndarray:
-    return _expanding_op(rolling_std, x, min_samples = 2)
-
-# Internal Cell
-@njit
-def _expanding_comp(comp: Callable,
-                    x: np.ndarray) -> np.ndarray:
-    n_samples = x.size
-    out = np.empty(n_samples, dtype=np.float32)
-    pivot = x[0]
-    out[0] = pivot
-    for i in range(1, n_samples):
-        if comp(x[i], pivot) > 0:
-            pivot = x[i]
-        out[i] = pivot
-    return out
+def expanding_std(input_array: np.ndarray) -> np.ndarray:
+    return _expanding_op(rolling_std, input_array, min_samples = 2)
 
 # Cell
 def expanding_max(x: np.ndarray) -> np.ndarray:
-    return _expanding_comp(_gt, x)
+    return _expanding_op(rolling_max, x)
 
 # Cell
 def expanding_min(x: np.ndarray) -> np.ndarray:
-    return _expanding_comp(_lt, x)
+    return _expanding_op(rolling_min, x)
 
 # Internal Cell
 def _seasonal_expanding_op(rolling_op: Callable, x: np.ndarray, season_length: int,
@@ -61,7 +46,6 @@ def seasonal_expanding_mean(x: np.ndarray, season_length: int) -> np.ndarray:
 # Cell
 def seasonal_expanding_std(x: np.ndarray, season_length: int) -> np.ndarray:
     return _seasonal_expanding_op(seasonal_rolling_std, x, season_length, min_samples=2)
-    return out
 
 # Cell
 def seasonal_expanding_min(x: np.ndarray, season_length: int):
