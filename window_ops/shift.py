@@ -10,7 +10,7 @@ from numba import njit  # type: ignore
 @njit
 def shift_array(input_array: np.ndarray, offset: int) -> np.ndarray:
     n_samples = input_array.size
-    output_array = np.full(n_samples, np.nan, dtype=np.float64)
+    output_array = np.full_like(input_array, np.nan)
     for i in range(n_samples - offset):
         output_array[i + offset] = input_array[i]
     return output_array

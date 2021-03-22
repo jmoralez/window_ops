@@ -10,6 +10,7 @@ from math import ceil, sqrt
 from typing import Callable, List, Optional, Union
 
 import numpy as np
+from sklearn.base import BaseEstimator
 
 from .expanding import *
 from .ewm import *
@@ -18,7 +19,7 @@ from .rolling import _rolling_std
 from .shift import shift_array
 
 # Internal Cell
-class BaseOnlineRolling:
+class BaseOnlineRolling(BaseEstimator):
 
     def __init__(self, rolling_op: Callable, window_size: int, min_samples: Optional[int] = None):
         self.rolling_op = rolling_op
@@ -83,7 +84,7 @@ class RollingStd(BaseOnlineRolling):
         return sqrt(self.m2 / (self.window_size - 1))
 
 # Internal Cell
-class BaseOnlineSeasonalRolling:
+class BaseOnlineSeasonalRolling(BaseEstimator):
 
     def __init__(self,
                  RollingOp: type,
@@ -147,7 +148,7 @@ class SeasonalRollingMax(BaseOnlineSeasonalRolling):
         super().__init__(RollingMax, season_length, window_size, min_samples)
 
 # Cell
-class ExpandingMean:
+class ExpandingMean(BaseEstimator):
 
     def fit_transform(self, x: np.ndarray) -> np.ndarray:
         exp_mean = expanding_mean(x)
@@ -161,7 +162,7 @@ class ExpandingMean:
         return self.cumsum / self.n
 
 # Cell
-class ExpandingMax:
+class ExpandingMax(BaseEstimator):
 
     def fit_transform(self, x: np.ndarray) -> np.ndarray:
         exp_max = expanding_max(x)
@@ -174,7 +175,7 @@ class ExpandingMax:
         return self.max
 
 # Cell
-class ExpandingMin:
+class ExpandingMin(BaseEstimator):
 
     def fit_transform(self, x: np.ndarray) -> np.ndarray:
         exp_min = expanding_min(x)
@@ -187,7 +188,7 @@ class ExpandingMin:
         return self.min
 
 # Cell
-class ExpandingStd:
+class ExpandingStd(BaseEstimator):
 
     def fit_transform(self, x):
         self.n = x.size
@@ -204,7 +205,7 @@ class ExpandingStd:
         return sqrt(self.x_m2n / (self. n - 1))
 
 # Internal Cell
-class BaseSeasonalExpanding:
+class BaseSeasonalExpanding(BaseEstimator):
 
     def __init__(self,
                  ExpandingOp: type,
@@ -252,7 +253,7 @@ class SeasonalExpandingMax(BaseSeasonalExpanding):
         super().__init__(ExpandingMax, season_length)
 
 # Cell
-class EWMMean:
+class EWMMean(BaseEstimator):
 
     def __init__(self, alpha):
         self.alpha = alpha
@@ -267,7 +268,7 @@ class EWMMean:
         return self.smoothed
 
 # Cell
-class Shift:
+class Shift(BaseEstimator):
 
     def __init__(self, offset: int):
         if offset <= 0:
