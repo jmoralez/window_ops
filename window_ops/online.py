@@ -24,14 +24,20 @@ class BaseOnlineRolling(BaseEstimator):
     def __init__(self, rolling_op: Callable, window_size: int, min_samples: Optional[int] = None):
         self.rolling_op = rolling_op
         self.window_size = window_size
-        self.min_samples = min_samples
+        self.min_samples = min_samples or window_size
 
     def fit_transform(self, x: np.ndarray) -> np.ndarray:
-        self.x = x[-self.window_size:].tolist()
+        self.window = tuple(x[-self.window_size:])
         return self.rolling_op(x, self.window_size, self.min_samples)
 
-    def _update_x(self, x: float) -> None:
-        self.x = self.x[1:] + [x]
+    def update(self, new: float) -> float:
+        if len(self.window) < self.window_size:
+            self.window += (new,)
+            if len(self.window) < self.min_samples:
+                return np.nan
+        else:
+            self.window = self.window[1:] + (new,)
+        return self._update_op()
 
 # Cell
 class RollingMean(BaseOnlineRolling):
@@ -39,9 +45,8 @@ class RollingMean(BaseOnlineRolling):
     def __init__(self, window_size: int, min_samples: Optional[int] = None):
         super().__init__(rolling_mean, window_size, min_samples)
 
-    def update(self, x: float) -> float:
-        self._update_x(x)
-        return sum(self.x) / self.window_size
+    def _update_op(self) -> float:
+        return sum(self.window) / len(self.window)
 
 # Cell
 class RollingMax(BaseOnlineRolling):
@@ -49,9 +54,8 @@ class RollingMax(BaseOnlineRolling):
     def __init__(self, window_size: int, min_samples: Optional[int] = None):
         super().__init__(rolling_max, window_size, min_samples)
 
-    def update(self, x) -> float:
-        self._update_x(x)
-        return max(self.x)
+    def _update_op(self) -> float:
+        return max(self.window)
 
 # Cell
 class RollingMin(BaseOnlineRolling):
@@ -59,29 +63,37 @@ class RollingMin(BaseOnlineRolling):
     def __init__(self, window_size: int, min_samples: Optional[int] = None):
         super().__init__(rolling_min, window_size, min_samples)
 
-    def update(self, x) -> float:
-        self._update_x(x)
-        return min(self.x)
+    def _update_op(self) -> float:
+        return min(self.window)
 
 # Cell
 class RollingStd(BaseOnlineRolling):
 
     def __init__(self, window_size: int, min_samples: Optional[int] = None):
-        super().__init__(rolling_std, window_size, min_samples)
+        super().__init__(rolling_std, window_size, min_samples or window_size)
 
     def fit_transform(self, x: np.ndarray) -> np.ndarray:
         result, self.curr_avg, self.m2 = _rolling_std(x, self.window_size, self.min_samples)
-        self.x = x[-self.window_size:].tolist()
+        if x.size < self.min_samples:
+            _, self.curr_avg, self.m2 = _rolling_std(x, self.window_size, 2)
+        self.window = tuple(x[-self.window_size:])
         return result
 
-    def update(self, x) -> float:
+    def update(self, new: float) -> float:
         prev_avg = self.curr_avg
-        new_minus_old = x - self.x[0]
-        self.curr_avg = prev_avg + new_minus_old / self.window_size
-        self.m2 += new_minus_old * (x - self.curr_avg + self.x[0] - prev_avg)
-        self._update_x(x)
+        if len(self.window) < self.window_size:
+            self.window += (new,)
+            self.curr_avg = prev_avg + (new - prev_avg) /  len(self.window)
+            self.m2 += (new - prev_avg) * (new - self.curr_avg)
+        else:
+            old = self.window[0]
+            self.window = self.window[1:] + (new,)
+            self.curr_avg = prev_avg + (new - old) / len(self.window)
+            self.m2 += (new - old) * (new - self.curr_avg + old - prev_avg)
+        if len(self.window) < self.min_samples:
+            return np.nan
         self.m2 = max(self.m2, 0) # loss of precision
-        return sqrt(self.m2 / (self.window_size - 1))
+        return sqrt(self.m2 / (len(self.window) - 1))
 
 # Internal Cell
 class BaseOnlineSeasonalRolling(BaseEstimator):
@@ -106,10 +118,10 @@ class BaseOnlineSeasonalRolling(BaseEstimator):
             self.rolling_ops.append(rolling_op)
         return result
 
-    def update(self, x: float) -> float:
+    def update(self, new: float) -> float:
         season = self.n_samples % self.season_length
         self.n_samples += 1
-        return self.rolling_ops[season].update(x)
+        return self.rolling_ops[season].update(new)
 
 # Cell
 class SeasonalRollingMean(BaseOnlineSeasonalRolling):
@@ -276,13 +288,13 @@ class Shift(BaseEstimator):
         self.offset = offset
 
     def fit_transform(self, x: np.ndarray) -> np.ndarray:
-        self.x = x[-self.offset:].tolist()
+        self.window = tuple(x[-self.offset:])
         return shift_array(x, self.offset)
 
-    def _update_x(self, x: float) -> None:
-        self.x = self.x[1:] + [x]
-
-    def update(self, x: float) -> float:
-        result = self.x[0]
-        self._update_x(x)
+    def update(self, new: float) -> float:
+        if len(self.window) < self.offset:
+            self.window = self.window + (new,)
+            return np.nan
+        result = self.window[0]
+        self.window = self.window[1:] + (new,)
         return result
