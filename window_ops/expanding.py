@@ -13,44 +13,54 @@ from numba import njit  # type: ignore
 from .rolling import *
 
 # Internal Cell
+@njit
 def _expanding_op(rolling_op: Callable, x: np.ndarray, min_samples: int = 1) -> np.ndarray:
     n_samples = x.size
     return rolling_op(x, window_size=n_samples, min_samples=min_samples)
 
 # Cell
+@njit
 def expanding_mean(input_array: np.ndarray) -> np.ndarray:
     return _expanding_op(rolling_mean, input_array)
 
 # Cell
+@njit
 def expanding_std(input_array: np.ndarray) -> np.ndarray:
     return _expanding_op(rolling_std, input_array, min_samples = 2)
 
 # Cell
+@njit
 def expanding_max(x: np.ndarray) -> np.ndarray:
     return _expanding_op(rolling_max, x)
 
 # Cell
+@njit
 def expanding_min(x: np.ndarray) -> np.ndarray:
     return _expanding_op(rolling_min, x)
 
 # Internal Cell
+@njit
 def _seasonal_expanding_op(rolling_op: Callable, x: np.ndarray, season_length: int,
                            min_samples: int = 1) -> np.ndarray:
     n_samples = x.size
     return rolling_op(x, season_length=season_length, window_size=n_samples, min_samples=min_samples)
 
 # Cell
+@njit
 def seasonal_expanding_mean(x: np.ndarray, season_length: int) -> np.ndarray:
     return _seasonal_expanding_op(seasonal_rolling_mean, x, season_length)
 
 # Cell
+@njit
 def seasonal_expanding_std(x: np.ndarray, season_length: int) -> np.ndarray:
     return _seasonal_expanding_op(seasonal_rolling_std, x, season_length, min_samples=2)
 
 # Cell
+@njit
 def seasonal_expanding_min(x: np.ndarray, season_length: int):
     return _seasonal_expanding_op(seasonal_rolling_min, x, season_length)
 
 # Cell
+@njit
 def seasonal_expanding_max(x: np.ndarray, season_length: int):
     return _seasonal_expanding_op(seasonal_rolling_max, x, season_length)

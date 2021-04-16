@@ -145,6 +145,7 @@ def rolling_min(x: np.ndarray,
     return _rolling_comp(_lt, x, window_size, min_samples)
 
 # Internal Cell
+@njit
 def _seasonal_rolling_op(rolling_op: Callable,
                          input_array: np.ndarray,
                          season_length: int,
@@ -157,6 +158,7 @@ def _seasonal_rolling_op(rolling_op: Callable,
     return output_array
 
 # Cell
+@njit
 @rolling_docstring
 def seasonal_rolling_mean(input_array: np.ndarray,
                           season_length: int,
@@ -165,6 +167,7 @@ def seasonal_rolling_mean(input_array: np.ndarray,
     return _seasonal_rolling_op(rolling_mean, input_array, season_length, window_size, min_samples)
 
 # Cell
+@njit
 @rolling_docstring
 def seasonal_rolling_std(input_array: np.ndarray,
                          season_length: int,
@@ -173,6 +176,7 @@ def seasonal_rolling_std(input_array: np.ndarray,
     return _seasonal_rolling_op(rolling_std, input_array, season_length, window_size, min_samples)
 
 # Cell
+@njit
 @rolling_docstring
 def seasonal_rolling_max(input_array: np.ndarray,
                          season_length: int,
@@ -181,6 +185,7 @@ def seasonal_rolling_max(input_array: np.ndarray,
     return _seasonal_rolling_op(rolling_max, input_array, season_length, window_size, min_samples)
 
 # Cell
+@njit
 @rolling_docstring
 def seasonal_rolling_min(x: np.ndarray,
                          season_length: int,
