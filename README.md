@@ -17,6 +17,17 @@ For a transformations `n_samples` -> `n_samples` you can use `{[seasonal_](rolli
 #### Benchmarks
 
 ```python
+pd.__version__
+```
+
+
+
+
+    '1.2.3'
+
+
+
+```python
 n_samples = 1_000  # array size
 window_size = 8  # for rolling operations
 season_length = 7  # for seasonal operations
@@ -34,22 +45,22 @@ display_dataframe(times, fmt='{:.2f}')
 
 |                         |   window_ops |   pandas |
 |:------------------------|-------------:|---------:|
-| rolling_mean            |         0    |     0.21 |
-| rolling_max             |         0.01 |     0.2  |
-| rolling_min             |         0.01 |     0.21 |
+| rolling_mean            |         0    |     0.17 |
+| rolling_max             |         0.01 |     0.19 |
+| rolling_min             |         0.01 |     0.23 |
 | rolling_std             |         0.01 |     0.22 |
-| expanding_mean          |         0    |     0.12 |
-| expanding_max           |         0    |     0.14 |
+| expanding_mean          |         0    |     0.13 |
+| expanding_max           |         0    |     0.13 |
 | expanding_min           |         0    |     0.13 |
-| expanding_std           |         0.01 |     0.15 |
-| seasonal_rolling_mean   |         0.02 |     2.62 |
-| seasonal_rolling_max    |         0.02 |     2.56 |
-| seasonal_rolling_min    |         0.02 |     2.66 |
-| seasonal_rolling_std    |         0.02 |     2.95 |
-| seasonal_expanding_mean |         0.02 |     2.42 |
-| seasonal_expanding_max  |         0.02 |     2.27 |
-| seasonal_expanding_min  |         0.02 |     2.25 |
-| seasonal_expanding_std  |         0.02 |     2.47 |
+| expanding_std           |         0.01 |     0.14 |
+| seasonal_rolling_mean   |         0    |     2.62 |
+| seasonal_rolling_max    |         0.02 |     3.04 |
+| seasonal_rolling_min    |         0.02 |     2.85 |
+| seasonal_rolling_std    |         0.01 |     2.37 |
+| seasonal_expanding_mean |         0    |     1.9  |
+| seasonal_expanding_max  |         0.01 |     1.79 |
+| seasonal_expanding_min  |         0.01 |     1.81 |
+| seasonal_expanding_std  |         0.01 |     2.45 |
 
 
 
@@ -62,22 +73,22 @@ display_dataframe(speedups, fmt='{:.0f}')
 
 |                         |   times faster |
 |:------------------------|---------------:|
-| rolling_mean            |             88 |
-| rolling_max             |             17 |
-| rolling_min             |             17 |
-| rolling_std             |             42 |
-| expanding_mean          |             52 |
-| expanding_max           |             31 |
-| expanding_min           |             30 |
-| expanding_std           |             18 |
-| seasonal_rolling_mean   |            172 |
-| seasonal_rolling_max    |            103 |
-| seasonal_rolling_min    |            107 |
-| seasonal_rolling_std    |            160 |
-| seasonal_expanding_mean |            151 |
-| seasonal_expanding_max  |            138 |
-| seasonal_expanding_min  |            125 |
-| seasonal_expanding_std  |            123 |
+| rolling_mean            |             76 |
+| rolling_max             |             14 |
+| rolling_min             |             21 |
+| rolling_std             |             33 |
+| expanding_mean          |             44 |
+| expanding_max           |             32 |
+| expanding_min           |             32 |
+| expanding_std           |             19 |
+| seasonal_rolling_mean   |            632 |
+| seasonal_rolling_max    |            201 |
+| seasonal_rolling_min    |            173 |
+| seasonal_rolling_std    |            322 |
+| seasonal_expanding_mean |            494 |
+| seasonal_expanding_max  |            353 |
+| seasonal_expanding_min  |            339 |
+| seasonal_expanding_std  |            238 |
 
 
 
@@ -98,21 +109,21 @@ display_dataframe(times.to_frame(), '{:.2f}')
 
 |                       |   average time (ms) |
 |:----------------------|--------------------:|
-| RollingMean           |                0.06 |
-| RollingMax            |                0.08 |
-| RollingMin            |                0.07 |
-| RollingStd            |                0.09 |
-| ExpandingMean         |                0.07 |
-| ExpandingMax          |                0.02 |
+| RollingMean           |                0.07 |
+| RollingMax            |                0.09 |
+| RollingMin            |                0.09 |
+| RollingStd            |                0.24 |
+| ExpandingMean         |                0.08 |
+| ExpandingMax          |                0.03 |
 | ExpandingMin          |                0.02 |
-| ExpandingStd          |                0.07 |
-| SeasonalRollingMean   |                0.12 |
+| ExpandingStd          |                0.08 |
+| SeasonalRollingMean   |                0.18 |
 | SeasonalRollingMax    |                0.14 |
-| SeasonalRollingMin    |                0.13 |
-| SeasonalRollingStd    |                0.15 |
-| SeasonalExpandingMean |                0.13 |
-| SeasonalExpandingMax  |                0.07 |
-| SeasonalExpandingMin  |                0.09 |
-| SeasonalExpandingStd  |                0.13 |
+| SeasonalRollingMin    |                0.19 |
+| SeasonalRollingStd    |                0.25 |
+| SeasonalExpandingMean |                0.09 |
+| SeasonalExpandingMax  |                0.06 |
+| SeasonalExpandingMin  |                0.06 |
+| SeasonalExpandingStd  |                0.09 |
 
 

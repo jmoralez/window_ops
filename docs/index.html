@@ -81,6 +81,39 @@ nb_path: "nbs/index.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">__version__</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&#39;1.2.3&#39;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">n_samples</span> <span class="o">=</span> <span class="mi">1_000</span>  <span class="c1"># array size</span>
 <span class="n">window_size</span> <span class="o">=</span> <span class="mi">8</span>  <span class="c1"># for rolling operations</span>
 <span class="n">season_length</span> <span class="o">=</span> <span class="mi">7</span>  <span class="c1"># for seasonal operations</span>
@@ -133,17 +166,17 @@ nb_path: "nbs/index.ipynb"
 <tr>
 <td style="text-align:left">rolling_mean</td>
 <td style="text-align:right">0</td>
-<td style="text-align:right">0.21</td>
+<td style="text-align:right">0.17</td>
 </tr>
 <tr>
 <td style="text-align:left">rolling_max</td>
 <td style="text-align:right">0.01</td>
-<td style="text-align:right">0.2</td>
+<td style="text-align:right">0.19</td>
 </tr>
 <tr>
 <td style="text-align:left">rolling_min</td>
 <td style="text-align:right">0.01</td>
-<td style="text-align:right">0.21</td>
+<td style="text-align:right">0.23</td>
 </tr>
 <tr>
 <td style="text-align:left">rolling_std</td>
@@ -153,12 +186,12 @@ nb_path: "nbs/index.ipynb"
 <tr>
 <td style="text-align:left">expanding_mean</td>
 <td style="text-align:right">0</td>
-<td style="text-align:right">0.12</td>
+<td style="text-align:right">0.13</td>
 </tr>
 <tr>
 <td style="text-align:left">expanding_max</td>
 <td style="text-align:right">0</td>
-<td style="text-align:right">0.14</td>
+<td style="text-align:right">0.13</td>
 </tr>
 <tr>
 <td style="text-align:left">expanding_min</td>
@@ -168,47 +201,47 @@ nb_path: "nbs/index.ipynb"
 <tr>
 <td style="text-align:left">expanding_std</td>
 <td style="text-align:right">0.01</td>
-<td style="text-align:right">0.15</td>
+<td style="text-align:right">0.14</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_rolling_mean</td>
-<td style="text-align:right">0.02</td>
+<td style="text-align:right">0</td>
 <td style="text-align:right">2.62</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_rolling_max</td>
 <td style="text-align:right">0.02</td>
-<td style="text-align:right">2.56</td>
+<td style="text-align:right">3.04</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_rolling_min</td>
 <td style="text-align:right">0.02</td>
-<td style="text-align:right">2.66</td>
+<td style="text-align:right">2.85</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_rolling_std</td>
-<td style="text-align:right">0.02</td>
-<td style="text-align:right">2.95</td>
+<td style="text-align:right">0.01</td>
+<td style="text-align:right">2.37</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_expanding_mean</td>
-<td style="text-align:right">0.02</td>
-<td style="text-align:right">2.42</td>
+<td style="text-align:right">0</td>
+<td style="text-align:right">1.9</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_expanding_max</td>
-<td style="text-align:right">0.02</td>
-<td style="text-align:right">2.27</td>
+<td style="text-align:right">0.01</td>
+<td style="text-align:right">1.79</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_expanding_min</td>
-<td style="text-align:right">0.02</td>
-<td style="text-align:right">2.25</td>
+<td style="text-align:right">0.01</td>
+<td style="text-align:right">1.81</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_expanding_std</td>
-<td style="text-align:right">0.02</td>
-<td style="text-align:right">2.47</td>
+<td style="text-align:right">0.01</td>
+<td style="text-align:right">2.45</td>
 </tr>
 </tbody>
 </table>
@@ -253,67 +286,67 @@ nb_path: "nbs/index.ipynb"
 <tbody>
 <tr>
 <td style="text-align:left">rolling_mean</td>
-<td style="text-align:right">88</td>
+<td style="text-align:right">76</td>
 </tr>
 <tr>
 <td style="text-align:left">rolling_max</td>
-<td style="text-align:right">17</td>
+<td style="text-align:right">14</td>
 </tr>
 <tr>
 <td style="text-align:left">rolling_min</td>
-<td style="text-align:right">17</td>
+<td style="text-align:right">21</td>
 </tr>
 <tr>
 <td style="text-align:left">rolling_std</td>
-<td style="text-align:right">42</td>
+<td style="text-align:right">33</td>
 </tr>
 <tr>
 <td style="text-align:left">expanding_mean</td>
-<td style="text-align:right">52</td>
+<td style="text-align:right">44</td>
 </tr>
 <tr>
 <td style="text-align:left">expanding_max</td>
-<td style="text-align:right">31</td>
+<td style="text-align:right">32</td>
 </tr>
 <tr>
 <td style="text-align:left">expanding_min</td>
-<td style="text-align:right">30</td>
+<td style="text-align:right">32</td>
 </tr>
 <tr>
 <td style="text-align:left">expanding_std</td>
-<td style="text-align:right">18</td>
+<td style="text-align:right">19</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_rolling_mean</td>
-<td style="text-align:right">172</td>
+<td style="text-align:right">632</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_rolling_max</td>
-<td style="text-align:right">103</td>
+<td style="text-align:right">201</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_rolling_min</td>
-<td style="text-align:right">107</td>
+<td style="text-align:right">173</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_rolling_std</td>
-<td style="text-align:right">160</td>
+<td style="text-align:right">322</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_expanding_mean</td>
-<td style="text-align:right">151</td>
+<td style="text-align:right">494</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_expanding_max</td>
-<td style="text-align:right">138</td>
+<td style="text-align:right">353</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_expanding_min</td>
-<td style="text-align:right">125</td>
+<td style="text-align:right">339</td>
 </tr>
 <tr>
 <td style="text-align:left">seasonal_expanding_std</td>
-<td style="text-align:right">123</td>
+<td style="text-align:right">238</td>
 </tr>
 </tbody>
 </table>
@@ -384,27 +417,27 @@ nb_path: "nbs/index.ipynb"
 <tbody>
 <tr>
 <td style="text-align:left">RollingMean</td>
-<td style="text-align:right">0.06</td>
+<td style="text-align:right">0.07</td>
 </tr>
 <tr>
 <td style="text-align:left">RollingMax</td>
-<td style="text-align:right">0.08</td>
-</tr>
-<tr>
-<td style="text-align:left">RollingMin</td>
-<td style="text-align:right">0.07</td>
-</tr>
-<tr>
-<td style="text-align:left">RollingStd</td>
 <td style="text-align:right">0.09</td>
 </tr>
 <tr>
+<td style="text-align:left">RollingMin</td>
+<td style="text-align:right">0.09</td>
+</tr>
+<tr>
+<td style="text-align:left">RollingStd</td>
+<td style="text-align:right">0.24</td>
+</tr>
+<tr>
 <td style="text-align:left">ExpandingMean</td>
-<td style="text-align:right">0.07</td>
+<td style="text-align:right">0.08</td>
 </tr>
 <tr>
 <td style="text-align:left">ExpandingMax</td>
-<td style="text-align:right">0.02</td>
+<td style="text-align:right">0.03</td>
 </tr>
 <tr>
 <td style="text-align:left">ExpandingMin</td>
@@ -412,11 +445,11 @@ nb_path: "nbs/index.ipynb"
 </tr>
 <tr>
 <td style="text-align:left">ExpandingStd</td>
-<td style="text-align:right">0.07</td>
+<td style="text-align:right">0.08</td>
 </tr>
 <tr>
 <td style="text-align:left">SeasonalRollingMean</td>
-<td style="text-align:right">0.12</td>
+<td style="text-align:right">0.18</td>
 </tr>
 <tr>
 <td style="text-align:left">SeasonalRollingMax</td>
@@ -424,27 +457,27 @@ nb_path: "nbs/index.ipynb"
 </tr>
 <tr>
 <td style="text-align:left">SeasonalRollingMin</td>
-<td style="text-align:right">0.13</td>
+<td style="text-align:right">0.19</td>
 </tr>
 <tr>
 <td style="text-align:left">SeasonalRollingStd</td>
-<td style="text-align:right">0.15</td>
+<td style="text-align:right">0.25</td>
 </tr>
 <tr>
 <td style="text-align:left">SeasonalExpandingMean</td>
-<td style="text-align:right">0.13</td>
-</tr>
-<tr>
-<td style="text-align:left">SeasonalExpandingMax</td>
-<td style="text-align:right">0.07</td>
-</tr>
-<tr>
-<td style="text-align:left">SeasonalExpandingMin</td>
 <td style="text-align:right">0.09</td>
 </tr>
 <tr>
+<td style="text-align:left">SeasonalExpandingMax</td>
+<td style="text-align:right">0.06</td>
+</tr>
+<tr>
+<td style="text-align:left">SeasonalExpandingMin</td>
+<td style="text-align:right">0.06</td>
+</tr>
+<tr>
 <td style="text-align:left">SeasonalExpandingStd</td>
-<td style="text-align:right">0.13</td>
+<td style="text-align:right">0.09</td>
 </tr>
 </tbody>
 </table>

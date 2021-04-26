@@ -11,11 +11,8 @@ from numba import njit  # type: ignore
 
 # Internal Cell
 @njit
-def _validate_rolling_sizes(n_samples: int,
-                            window_size: int,
+def _validate_rolling_sizes(window_size: int,
                             min_samples: Optional[int] = None) -> Tuple[int,int]:
-    if window_size > n_samples:
-        window_size = n_samples
     # have to split the following if because of numba
     if min_samples is None:
         min_samples = window_size

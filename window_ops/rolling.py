@@ -31,11 +31,11 @@ def rolling_mean(input_array: np.ndarray,
                  window_size: int,
                  min_samples: Optional[int] = None) -> np.ndarray:
     n_samples = input_array.size
-    window_size, min_samples = _validate_rolling_sizes(n_samples, window_size, min_samples)
+    window_size, min_samples = _validate_rolling_sizes(window_size, min_samples)
 
     output_array = np.full_like(input_array, np.nan)
     start_idx = first_not_na(input_array)
-    if start_idx + min_samples >= n_samples:
+    if start_idx + min_samples > n_samples:
         return output_array
 
     accum = 0.
@@ -60,13 +60,13 @@ def _rolling_std(input_array: np.ndarray,
 
     Reference: https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm"""
     n_samples = input_array.size
-    window_size, min_samples = _validate_rolling_sizes(n_samples, window_size, min_samples)
+    window_size, min_samples = _validate_rolling_sizes(window_size, min_samples)
     if min_samples < 2:  # type: ignore
         raise ValueError('min_samples must be greater than 1.')
 
     output_array = np.full_like(input_array, np.nan)
     start_idx = first_not_na(input_array)
-    if start_idx + min_samples >= n_samples:
+    if start_idx + min_samples > n_samples:
         return output_array, 0, 0
 
     prev_avg = 0.
@@ -105,11 +105,11 @@ def _rolling_comp(comp: Callable,
                   window_size: int,
                   min_samples: Optional[int] = None) -> np.ndarray:
     n_samples = input_array.size
-    window_size, min_samples = _validate_rolling_sizes(n_samples, window_size, min_samples)
+    window_size, min_samples = _validate_rolling_sizes(window_size, min_samples)
 
     output_array = np.full_like(input_array, np.nan)
     start_idx = first_not_na(input_array)
-    if start_idx + min_samples >= n_samples:
+    if start_idx + min_samples > n_samples:
         return output_array
 
     upper_limit = min(start_idx + window_size, n_samples)
