@@ -1,0 +1,10 @@
+website:
+  sidebar:
+    contents:
+      - index.ipynb
+      - ewm.ipynb
+      - expanding.ipynb
+      - online.ipynb
+      - rolling.ipynb
+      - shift.ipynb
+      - utils.ipynb
