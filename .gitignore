@@ -141,3 +141,5 @@ checklink/cookies.txt
 
 # dask
 dask-worker-space
+_docs/
+_proc/
