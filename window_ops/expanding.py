@@ -15,19 +15,21 @@ from .rolling import *
 
 # %% ../nbs/expanding.ipynb 6
 @njit
-def _expanding_op(rolling_op: Callable, x: np.ndarray, min_samples: int = 1) -> np.ndarray:
+def _expanding_op(
+    rolling_op: Callable, x: np.ndarray, min_samples: int = 1
+) -> np.ndarray:
     n_samples = x.size
     return rolling_op(x, window_size=n_samples, min_samples=min_samples)
 
 # %% ../nbs/expanding.ipynb 7
 @njit
-def expanding_mean(input_array: np.ndarray) -> np.ndarray:
-    return _expanding_op(rolling_mean, input_array)
+def expanding_mean(x: np.ndarray) -> np.ndarray:
+    return _expanding_op(rolling_mean, x)
 
 # %% ../nbs/expanding.ipynb 9
 @njit
-def expanding_std(input_array: np.ndarray) -> np.ndarray:
-    return _expanding_op(rolling_std, input_array, min_samples = 2)
+def expanding_std(x: np.ndarray) -> np.ndarray:
+    return _expanding_op(rolling_std, x, min_samples=2)
 
 # %% ../nbs/expanding.ipynb 11
 @njit
@@ -41,10 +43,13 @@ def expanding_min(x: np.ndarray) -> np.ndarray:
 
 # %% ../nbs/expanding.ipynb 17
 @njit
-def _seasonal_expanding_op(rolling_op: Callable, x: np.ndarray, season_length: int,
-                           min_samples: int = 1) -> np.ndarray:
+def _seasonal_expanding_op(
+    rolling_op: Callable, x: np.ndarray, season_length: int, min_samples: int = 1
+) -> np.ndarray:
     n_samples = x.size
-    return rolling_op(x, season_length=season_length, window_size=n_samples, min_samples=min_samples)
+    return rolling_op(
+        x, season_length=season_length, window_size=n_samples, min_samples=min_samples
+    )
 
 # %% ../nbs/expanding.ipynb 18
 @njit

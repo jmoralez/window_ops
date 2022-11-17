@@ -12,8 +12,9 @@ from numba import njit  # type: ignore
 
 # %% ../nbs/utils.ipynb 3
 @njit
-def _validate_rolling_sizes(window_size: int,
-                            min_samples: Optional[int] = None) -> Tuple[int,int]:
+def _validate_rolling_sizes(
+    window_size: int, min_samples: Optional[int] = None
+) -> Tuple[int, int]:
     # have to split the following if because of numba
     if min_samples is None:
         min_samples = window_size
@@ -21,9 +22,11 @@ def _validate_rolling_sizes(window_size: int,
         min_samples = window_size
     return window_size, min_samples
 
+
 @njit
 def _gt(x: float, y: float) -> float:
     return x - y
+
 
 @njit
 def _lt(x: float, y: float) -> float:
@@ -31,9 +34,20 @@ def _lt(x: float, y: float) -> float:
 
 # %% ../nbs/utils.ipynb 4
 @njit
-def first_not_na(input_array: np.ndarray) -> int:
+def first_not_na(x: np.ndarray) -> int:
     """Returns the index of the first non-na value in the array."""
-    for index, element in enumerate(input_array):
+    for index, element in enumerate(x):
         if not np.isnan(element):
             return index
-    return input_array.size
+    return x.size
+
+# %% ../nbs/utils.ipynb 5
+@njit
+def _get_out_arr(x: np.ndarray, out: Optional[np.ndarray] = None) -> np.ndarray:
+    if out is None:
+        out_arr = np.full_like(x, np.nan)
+    else:
+        if out.size != x.size:
+            raise ValueError("out must be the same size as the input")
+        out_arr = out
+    return out_arr

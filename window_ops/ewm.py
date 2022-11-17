@@ -13,13 +13,13 @@ from .utils import first_not_na
 
 # %% ../nbs/ewm.ipynb 4
 @njit
-def ewm_mean(input_array: np.ndarray, alpha: float) -> np.ndarray:
-    n_samples = input_array.size
-    output_array = np.full_like(input_array, np.nan)
-    start_idx = first_not_na(input_array)
+def ewm_mean(x: np.ndarray, alpha: float) -> np.ndarray:
+    n_samples = x.size
+    out = np.full_like(x, np.nan)
+    start_idx = first_not_na(x)
     if start_idx >= n_samples:
-        return output_array
-    output_array[start_idx] = input_array[start_idx]
+        return out
+    out[start_idx] = x[start_idx]
     for i in range(start_idx + 1, n_samples):
-        output_array[i] = alpha * input_array[i] + (1-alpha) * output_array[i-1]
-    return output_array
+        out[i] = alpha * x[i] + (1 - alpha) * out[i - 1]
+    return out

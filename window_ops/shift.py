@@ -9,9 +9,9 @@ from numba import njit  # type: ignore
 
 # %% ../nbs/shift.ipynb 3
 @njit
-def shift_array(input_array: np.ndarray, offset: int) -> np.ndarray:
-    n_samples = input_array.size
-    output_array = np.full_like(input_array, np.nan)
+def shift_array(x: np.ndarray, offset: int) -> np.ndarray:
+    n_samples = x.size
+    out = np.full_like(x, np.nan)
     for i in range(n_samples - offset):
-        output_array[i + offset] = input_array[i]
-    return output_array
+        out[i + offset] = x[i]
+    return out

@@ -11,185 +11,227 @@ from typing import Callable, Optional, Tuple
 import numpy as np
 from numba import njit  # type: ignore
 
-from .utils import _gt, _lt, _validate_rolling_sizes, first_not_na
+from window_ops.utils import (
+    _get_out_arr,
+    _gt,
+    _lt,
+    _validate_rolling_sizes,
+    first_not_na,
+)
 
-# %% ../nbs/rolling.ipynb 7
+# %% ../nbs/rolling.ipynb 6
 def rolling_docstring(*args, **kwargs) -> Callable:
     base_docstring = """
         Compute the {} over the last non-na window_size samples of the
         input array starting at min_samples.
     """
+
     def docstring_decorator(function: Callable):
         function.__doc__ = base_docstring.format(function.__name__)
         return function
-        
+
     return docstring_decorator(*args, **kwargs)
 
-# %% ../nbs/rolling.ipynb 9
+# %% ../nbs/rolling.ipynb 10
 @njit
 @rolling_docstring
-def rolling_mean(input_array: np.ndarray,
-                 window_size: int,
-                 min_samples: Optional[int] = None) -> np.ndarray:
-    n_samples = input_array.size
+def rolling_mean(
+    x: np.ndarray,
+    window_size: int,
+    min_samples: Optional[int] = None,
+    out: Optional[np.ndarray] = None,
+) -> np.ndarray:
+    n_samples = x.size
     window_size, min_samples = _validate_rolling_sizes(window_size, min_samples)
-    
-    output_array = np.full_like(input_array, np.nan)
-    start_idx = first_not_na(input_array)
+    out_arr = _get_out_arr(x, out)
+    start_idx = first_not_na(x)
     if start_idx + min_samples > n_samples:
-        return output_array
-    
-    accum = 0.
+        return out_arr
+
+    accum = 0.0
     upper_limit = min(start_idx + window_size, n_samples)
     for i in range(start_idx, upper_limit):
-        accum += input_array[i]
+        accum += x[i]
         if i + 1 >= start_idx + min_samples:
-            output_array[i] = accum / (i - start_idx + 1)
-            
+            out_arr[i] = accum / (i - start_idx + 1)
+
     for i in range(start_idx + window_size, n_samples):
-        accum += input_array[i] - input_array[i - window_size]
-        output_array[i] = accum / window_size
+        accum += x[i] - x[i - window_size]
+        out_arr[i] = accum / window_size
 
-    return output_array
-
-# %% ../nbs/rolling.ipynb 11
-@njit
-def _rolling_std(input_array: np.ndarray, 
-                 window_size: int,
-                 min_samples: Optional[int] = None) -> Tuple[np.ndarray, float, float]:
-    """Computes the rolling standard deviation using Welford's online algorithm.
-    
-    Reference: https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm"""
-    n_samples = input_array.size
-    window_size, min_samples = _validate_rolling_sizes(window_size, min_samples)
-    if min_samples < 2:  # type: ignore
-        raise ValueError('min_samples must be greater than 1.')
-
-    output_array = np.full_like(input_array, np.nan)
-    start_idx = first_not_na(input_array)
-    if start_idx + min_samples > n_samples:
-        return output_array, 0, 0
-
-    prev_avg = 0.
-    curr_avg = input_array[start_idx]
-    m2 = 0.
-    upper_limit = min(start_idx + window_size, n_samples)
-    for i in range(start_idx + 1, upper_limit):
-        prev_avg = curr_avg
-        curr_avg = prev_avg + (input_array[i] - prev_avg) / (i - start_idx + 1)
-        m2 += (input_array[i] - prev_avg) * (input_array[i] - curr_avg)
-        if i + 1 >= start_idx + min_samples:
-            output_array[i] = sqrt(m2 / (i - start_idx))
-            
-    for i in range(start_idx + window_size, n_samples):
-        prev_avg = curr_avg
-        new_minus_old = input_array[i] - input_array[i-window_size]
-        curr_avg = prev_avg + new_minus_old / window_size
-        m2 += new_minus_old * (input_array[i] - curr_avg + input_array[i-window_size] - prev_avg)
-        output_array[i] = sqrt(m2 / (window_size - 1))
-        
-    return output_array, curr_avg, m2
+    return out_arr
 
 # %% ../nbs/rolling.ipynb 12
 @njit
-@rolling_docstring
-def rolling_std(input_array: np.ndarray, 
-                window_size: int,
-                min_samples: Optional[int] = None) -> np.ndarray:
-    output_array, _, _ = _rolling_std(input_array, window_size, min_samples)
-    return output_array
+def _rolling_std(
+    x: np.ndarray,
+    window_size: int,
+    min_samples: Optional[int] = None,
+    out: Optional[np.ndarray] = None,
+) -> Tuple[np.ndarray, float, float]:
+    """Computes the rolling standard deviation using Welford's online algorithm.
 
-# %% ../nbs/rolling.ipynb 14
-@njit 
-def _rolling_comp(comp: Callable,
-                  input_array: np.ndarray, 
-                  window_size: int,
-                  min_samples: Optional[int] = None) -> np.ndarray:
-    n_samples = input_array.size
+    Reference: https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm"""
+    n_samples = x.size
     window_size, min_samples = _validate_rolling_sizes(window_size, min_samples)
-    
-    output_array = np.full_like(input_array, np.nan)
-    start_idx = first_not_na(input_array)
+    if min_samples < 2:  # type: ignore
+        raise ValueError("min_samples must be greater than 1.")
+
+    out_arr = _get_out_arr(x, out)
+    start_idx = first_not_na(x)
     if start_idx + min_samples > n_samples:
-        return output_array
-    
+        return out_arr, 0, 0
+
+    prev_avg = 0.0
+    curr_avg = x[start_idx]
+    m2 = 0.0
     upper_limit = min(start_idx + window_size, n_samples)
-    pivot = input_array[start_idx]
-    for i in range(start_idx, upper_limit):
-        if comp(input_array[i], pivot) > 0:
-            pivot = input_array[i]
+    for i in range(start_idx + 1, upper_limit):
+        prev_avg = curr_avg
+        curr_avg = prev_avg + (x[i] - prev_avg) / (i - start_idx + 1)
+        m2 += (x[i] - prev_avg) * (x[i] - curr_avg)
         if i + 1 >= start_idx + min_samples:
-            output_array[i] = pivot
-    
+            out_arr[i] = sqrt(m2 / (i - start_idx))
+
     for i in range(start_idx + window_size, n_samples):
-        pivot = input_array[i]
-        for j in range(1, window_size):
-            if comp(input_array[i - j], pivot) > 0:
-                pivot = input_array[i - j]
-        output_array[i] = pivot
-    return output_array
+        prev_avg = curr_avg
+        new_minus_old = x[i] - x[i - window_size]
+        curr_avg = prev_avg + new_minus_old / window_size
+        m2 += new_minus_old * (x[i] - curr_avg + x[i - window_size] - prev_avg)
+        out_arr[i] = sqrt(m2 / (window_size - 1))
+
+    return out_arr, curr_avg, m2
+
+# %% ../nbs/rolling.ipynb 13
+@njit
+@rolling_docstring
+def rolling_std(
+    x: np.ndarray, window_size: int, min_samples: Optional[int] = None
+) -> np.ndarray:
+    out, _, _ = _rolling_std(x, window_size, min_samples)
+    return out
 
 # %% ../nbs/rolling.ipynb 15
 @njit
-@rolling_docstring
-def rolling_max(input_array: np.ndarray,
-                window_size: int,
-                min_samples: Optional[int] = None) -> np.ndarray:
-    return _rolling_comp(_gt, input_array, window_size, min_samples)
+def _rolling_comp(
+    comp: Callable,
+    x: np.ndarray,
+    window_size: int,
+    min_samples: Optional[int] = None,
+    out: Optional[np.ndarray] = None,
+) -> np.ndarray:
+    n_samples = x.size
+    window_size, min_samples = _validate_rolling_sizes(window_size, min_samples)
+    out_arr = _get_out_arr(x, out)
+    start_idx = first_not_na(x)
+    if start_idx + min_samples > n_samples:
+        return out_arr
 
-# %% ../nbs/rolling.ipynb 17
+    upper_limit = min(start_idx + window_size, n_samples)
+    pivot = x[start_idx]
+    for i in range(start_idx, upper_limit):
+        if comp(x[i], pivot) > 0:
+            pivot = x[i]
+        if i + 1 >= start_idx + min_samples:
+            out_arr[i] = pivot
+
+    for i in range(start_idx + window_size, n_samples):
+        pivot = x[i]
+        for j in range(1, window_size):
+            if comp(x[i - j], pivot) > 0:
+                pivot = x[i - j]
+        out_arr[i] = pivot
+    return out_arr
+
+# %% ../nbs/rolling.ipynb 16
 @njit
 @rolling_docstring
-def rolling_min(x: np.ndarray,
-                window_size: int,
-                min_samples: Optional[int] = None) -> np.ndarray:
-    return _rolling_comp(_lt, x, window_size, min_samples)
+def rolling_max(
+    x: np.ndarray, window_size: int, min_samples: Optional[int] = None
+) -> np.ndarray:
+    return _rolling_comp(_gt, x, window_size, min_samples)
 
-# %% ../nbs/rolling.ipynb 20
+# %% ../nbs/rolling.ipynb 18
 @njit
-def _seasonal_rolling_op(rolling_op: Callable,
-                         input_array: np.ndarray,
-                         season_length: int,
-                         window_size: int,
-                         min_samples: Optional[int] = None) -> np.ndarray: 
-    n_samples = input_array.size
-    output_array = np.full_like(input_array, np.nan)
+@rolling_docstring
+def rolling_min(
+    x: np.ndarray,
+    window_size: int,
+    min_samples: Optional[int] = None,
+    out: Optional[np.ndarray] = None,
+) -> np.ndarray:
+    return _rolling_comp(_lt, x, window_size, min_samples, out)
+
+# %% ../nbs/rolling.ipynb 21
+@njit
+def _seasonal_rolling_op(
+    rolling_op: Callable,
+    x: np.ndarray,
+    season_length: int,
+    window_size: int,
+    min_samples: Optional[int] = None,
+    out: Optional[np.ndarray] = None,
+) -> np.ndarray:
+    n_samples = x.size
+    out_arr = _get_out_arr(x, out)
     for season in range(season_length):
-        output_array[season::season_length] = rolling_op(input_array[season::season_length], window_size, min_samples)
-    return output_array
+        out_arr[season::season_length] = rolling_op(
+            x[season::season_length], window_size, min_samples
+        )
+    return out_arr
 
-# %% ../nbs/rolling.ipynb 22
+# %% ../nbs/rolling.ipynb 23
 @njit
 @rolling_docstring
-def seasonal_rolling_mean(input_array: np.ndarray,
-                          season_length: int,
-                          window_size: int,
-                          min_samples: Optional[int] = None) -> np.ndarray:
-    return _seasonal_rolling_op(rolling_mean, input_array, season_length, window_size, min_samples)
+def seasonal_rolling_mean(
+    x: np.ndarray,
+    season_length: int,
+    window_size: int,
+    min_samples: Optional[int] = None,
+    out: Optional[np.ndarray] = None,
+) -> np.ndarray:
+    return _seasonal_rolling_op(
+        rolling_mean, x, season_length, window_size, min_samples, out
+    )
 
-# %% ../nbs/rolling.ipynb 24
+# %% ../nbs/rolling.ipynb 25
 @njit
 @rolling_docstring
-def seasonal_rolling_std(input_array: np.ndarray,
-                         season_length: int,
-                         window_size: int,
-                         min_samples: Optional[int] = None) -> np.ndarray:
-    return _seasonal_rolling_op(rolling_std, input_array, season_length, window_size, min_samples)
+def seasonal_rolling_std(
+    x: np.ndarray,
+    season_length: int,
+    window_size: int,
+    min_samples: Optional[int] = None,
+    out: Optional[np.ndarray] = None,
+) -> np.ndarray:
+    return _seasonal_rolling_op(
+        rolling_std, x, season_length, window_size, min_samples, out
+    )
 
-# %% ../nbs/rolling.ipynb 26
+# %% ../nbs/rolling.ipynb 27
 @njit
 @rolling_docstring
-def seasonal_rolling_max(input_array: np.ndarray,
-                         season_length: int,
-                         window_size: int,
-                         min_samples: Optional[int] = None) -> np.ndarray:
-    return _seasonal_rolling_op(rolling_max, input_array, season_length, window_size, min_samples)
+def seasonal_rolling_max(
+    x: np.ndarray,
+    season_length: int,
+    window_size: int,
+    min_samples: Optional[int] = None,
+    out: Optional[np.ndarray] = None,
+) -> np.ndarray:
+    return _seasonal_rolling_op(
+        rolling_max, x, season_length, window_size, min_samples, out
+    )
 
-# %% ../nbs/rolling.ipynb 28
+# %% ../nbs/rolling.ipynb 29
 @njit
 @rolling_docstring
-def seasonal_rolling_min(x: np.ndarray,
-                         season_length: int,
-                         window_size: int,
-                         min_samples: Optional[int] = None) -> np.ndarray:
-    return _seasonal_rolling_op(rolling_min, x, season_length, window_size, min_samples)
+def seasonal_rolling_min(
+    x: np.ndarray,
+    season_length: int,
+    window_size: int,
+    min_samples: Optional[int] = None,
+    out: Optional[np.ndarray] = None,
+) -> np.ndarray:
+    return _seasonal_rolling_op(
+        rolling_min, x, season_length, window_size, min_samples, out
+    )
