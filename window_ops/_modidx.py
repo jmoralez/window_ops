@@ -2,8 +2,8 @@
 
 d = { 'settings': { 'branch': 'master',
                 'doc_baseurl': '/window_ops/',
-                'doc_host': 'https://jose-moralez.github.io',
-                'git_url': 'https://github.com/jose-moralez/window_ops/tree/master/',
+                'doc_host': 'https://jmoralez.github.io',
+                'git_url': 'https://github.com/jmoralez/window_ops/tree/master/',
                 'lib_path': 'window_ops'},
   'syms': { 'window_ops.ewm': {'window_ops.ewm.ewm_mean': ('ewm.html#ewm_mean', 'window_ops/ewm.py')},
             'window_ops.expanding': { 'window_ops.expanding._expanding_op': ('expanding.html#_expanding_op', 'window_ops/expanding.py'),
