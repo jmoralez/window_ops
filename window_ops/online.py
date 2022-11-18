@@ -24,11 +24,10 @@ from window_ops.rolling import (
     rolling_max,
     rolling_mean,
     rolling_min,
-    rolling_std,
 )
 from .shift import shift_array
 
-# %% ../nbs/online.ipynb 8
+# %% ../nbs/online.ipynb 9
 class BaseOnlineRolling(abc.ABC):
     def __init__(
         self, rolling_op: Callable, window_size: int, min_samples: Optional[int] = None
@@ -54,7 +53,7 @@ class BaseOnlineRolling(abc.ABC):
             self.window = self.window[1:] + (new,)
         return self._update_op()
 
-# %% ../nbs/online.ipynb 9
+# %% ../nbs/online.ipynb 10
 class RollingMean(BaseOnlineRolling):
     def __init__(self, window_size: int, min_samples: Optional[int] = None):
         super().__init__(rolling_mean, window_size, min_samples)
@@ -62,7 +61,7 @@ class RollingMean(BaseOnlineRolling):
     def _update_op(self) -> float:
         return sum(self.window) / len(self.window)
 
-# %% ../nbs/online.ipynb 11
+# %% ../nbs/online.ipynb 12
 class RollingMax(BaseOnlineRolling):
     def __init__(self, window_size: int, min_samples: Optional[int] = None):
         super().__init__(rolling_max, window_size, min_samples)
@@ -70,7 +69,7 @@ class RollingMax(BaseOnlineRolling):
     def _update_op(self) -> float:
         return max(self.window)
 
-# %% ../nbs/online.ipynb 13
+# %% ../nbs/online.ipynb 14
 class RollingMin(BaseOnlineRolling):
     def __init__(self, window_size: int, min_samples: Optional[int] = None):
         super().__init__(rolling_min, window_size, min_samples)
@@ -78,10 +77,11 @@ class RollingMin(BaseOnlineRolling):
     def _update_op(self) -> float:
         return min(self.window)
 
-# %% ../nbs/online.ipynb 15
-class RollingStd(BaseOnlineRolling):
+# %% ../nbs/online.ipynb 16
+class RollingStd:
     def __init__(self, window_size: int, min_samples: Optional[int] = None):
-        super().__init__(rolling_std, window_size, min_samples or window_size)
+        self.window_size = window_size
+        self.min_samples = min_samples or window_size
 
     def fit_transform(self, x: np.ndarray) -> np.ndarray:
         result, self.curr_avg, self.m2 = _rolling_std(
@@ -108,7 +108,7 @@ class RollingStd(BaseOnlineRolling):
         self.m2 = max(self.m2, 0)  # loss of precision
         return sqrt(self.m2 / (len(self.window) - 1))
 
-# %% ../nbs/online.ipynb 19
+# %% ../nbs/online.ipynb 20
 class BaseOnlineSeasonalRolling:
     def __init__(
         self,
@@ -141,35 +141,35 @@ class BaseOnlineSeasonalRolling:
         self.n_samples += 1
         return self.rolling_ops[season].update(new)
 
-# %% ../nbs/online.ipynb 20
+# %% ../nbs/online.ipynb 21
 class SeasonalRollingMean(BaseOnlineSeasonalRolling):
     def __init__(
         self, season_length: int, window_size: int, min_samples: Optional[int] = None
     ):
         super().__init__(RollingMean, season_length, window_size, min_samples)
 
-# %% ../nbs/online.ipynb 22
+# %% ../nbs/online.ipynb 23
 class SeasonalRollingStd(BaseOnlineSeasonalRolling):
     def __init__(
         self, season_length: int, window_size: int, min_samples: Optional[int] = None
     ):
         super().__init__(RollingStd, season_length, window_size, min_samples)
 
-# %% ../nbs/online.ipynb 24
+# %% ../nbs/online.ipynb 25
 class SeasonalRollingMin(BaseOnlineSeasonalRolling):
     def __init__(
         self, season_length: int, window_size: int, min_samples: Optional[int] = None
     ):
         super().__init__(RollingMin, season_length, window_size, min_samples)
 
-# %% ../nbs/online.ipynb 26
+# %% ../nbs/online.ipynb 27
 class SeasonalRollingMax(BaseOnlineSeasonalRolling):
     def __init__(
         self, season_length: int, window_size: int, min_samples: Optional[int] = None
     ):
         super().__init__(RollingMax, season_length, window_size, min_samples)
 
-# %% ../nbs/online.ipynb 30
+# %% ../nbs/online.ipynb 31
 class ExpandingMean:
     def fit_transform(self, x: np.ndarray) -> np.ndarray:
         exp_mean = expanding_mean(x)
@@ -182,7 +182,7 @@ class ExpandingMean:
         self.n += 1
         return self.cumsum / self.n
 
-# %% ../nbs/online.ipynb 33
+# %% ../nbs/online.ipynb 34
 class ExpandingMax:
     def fit_transform(self, x: np.ndarray) -> np.ndarray:
         exp_max = expanding_max(x)
@@ -194,7 +194,7 @@ class ExpandingMax:
             self.max = x
         return self.max
 
-# %% ../nbs/online.ipynb 35
+# %% ../nbs/online.ipynb 36
 class ExpandingMin:
     def fit_transform(self, x: np.ndarray) -> np.ndarray:
         exp_min = expanding_min(x)
@@ -206,7 +206,7 @@ class ExpandingMin:
             self.min = x
         return self.min
 
-# %% ../nbs/online.ipynb 37
+# %% ../nbs/online.ipynb 38
 class ExpandingStd:
     def fit_transform(self, x):
         self.n = x.size
@@ -222,7 +222,7 @@ class ExpandingStd:
         self.x_m2n += (x - prev_avg) * (x - self.curr_avg)
         return sqrt(self.x_m2n / (self.n - 1))
 
-# %% ../nbs/online.ipynb 40
+# %% ../nbs/online.ipynb 41
 class BaseSeasonalExpanding:
     def __init__(self, ExpandingOp: type, season_length: int):
         self.ExpandingOp = ExpandingOp
@@ -245,27 +245,27 @@ class BaseSeasonalExpanding:
         self.n_samples += 1
         return self.expanding_ops[season].update(x)
 
-# %% ../nbs/online.ipynb 41
+# %% ../nbs/online.ipynb 42
 class SeasonalExpandingMean(BaseSeasonalExpanding):
     def __init__(self, season_length: int):
         super().__init__(ExpandingMean, season_length)
 
-# %% ../nbs/online.ipynb 43
+# %% ../nbs/online.ipynb 44
 class SeasonalExpandingStd(BaseSeasonalExpanding):
     def __init__(self, season_length: int):
         super().__init__(ExpandingStd, season_length)
 
-# %% ../nbs/online.ipynb 45
+# %% ../nbs/online.ipynb 46
 class SeasonalExpandingMin(BaseSeasonalExpanding):
     def __init__(self, season_length: int):
         super().__init__(ExpandingMin, season_length)
 
-# %% ../nbs/online.ipynb 47
+# %% ../nbs/online.ipynb 48
 class SeasonalExpandingMax(BaseSeasonalExpanding):
     def __init__(self, season_length: int):
         super().__init__(ExpandingMax, season_length)
 
-# %% ../nbs/online.ipynb 50
+# %% ../nbs/online.ipynb 51
 class EWMMean:
     def __init__(self, alpha):
         self.alpha = alpha
@@ -279,7 +279,7 @@ class EWMMean:
         self.smoothed = self.alpha * x + (1 - self.alpha) * self.smoothed
         return self.smoothed
 
-# %% ../nbs/online.ipynb 53
+# %% ../nbs/online.ipynb 54
 class Shift:
     def __init__(self, offset: int):
         if offset <= 0:
