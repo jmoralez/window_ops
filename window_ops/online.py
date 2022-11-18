@@ -7,19 +7,29 @@ __all__ = ['RollingMean', 'RollingMax', 'RollingMin', 'RollingStd', 'SeasonalRol
            'Shift']
 
 # %% ../nbs/online.ipynb 3
-from math import ceil, sqrt
-from typing import Callable, List, Optional, Union
+import abc
+from math import sqrt
+from typing import Callable, Optional
 
 import numpy as np
 
-from .expanding import *
-from .ewm import *
-from .rolling import *
-from .rolling import _rolling_std
+from window_ops.expanding import (
+    expanding_max,
+    expanding_min,
+    expanding_mean,
+)
+from .ewm import ewm_mean
+from window_ops.rolling import (
+    _rolling_std,
+    rolling_max,
+    rolling_mean,
+    rolling_min,
+    rolling_std,
+)
 from .shift import shift_array
 
 # %% ../nbs/online.ipynb 8
-class BaseOnlineRolling:
+class BaseOnlineRolling(abc.ABC):
     def __init__(
         self, rolling_op: Callable, window_size: int, min_samples: Optional[int] = None
     ):
@@ -30,6 +40,10 @@ class BaseOnlineRolling:
     def fit_transform(self, x: np.ndarray) -> np.ndarray:
         self.window = tuple(x[-self.window_size :])
         return self.rolling_op(x, self.window_size, self.min_samples)
+
+    @abc.abstractmethod
+    def _update_op(self):
+        ...
 
     def update(self, new: float) -> float:
         if len(self.window) < self.window_size:

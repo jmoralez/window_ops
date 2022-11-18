@@ -106,10 +106,13 @@ def _rolling_std(
 @njit
 @rolling_docstring
 def rolling_std(
-    x: np.ndarray, window_size: int, min_samples: Optional[int] = None
+    x: np.ndarray,
+    window_size: int,
+    min_samples: Optional[int] = None,
+    out: Optional[np.ndarray] = None,
 ) -> np.ndarray:
-    out, _, _ = _rolling_std(x, window_size, min_samples)
-    return out
+    out_arr, _, _ = _rolling_std(x, window_size, min_samples, out)
+    return out_arr
 
 # %% ../nbs/rolling.ipynb 15
 @njit
@@ -147,9 +150,12 @@ def _rolling_comp(
 @njit
 @rolling_docstring
 def rolling_max(
-    x: np.ndarray, window_size: int, min_samples: Optional[int] = None
+    x: np.ndarray,
+    window_size: int,
+    min_samples: Optional[int] = None,
+    out: Optional[np.ndarray] = None,
 ) -> np.ndarray:
-    return _rolling_comp(_gt, x, window_size, min_samples)
+    return _rolling_comp(_gt, x, window_size, min_samples, out)
 
 # %% ../nbs/rolling.ipynb 18
 @njit
@@ -172,11 +178,13 @@ def _seasonal_rolling_op(
     min_samples: Optional[int] = None,
     out: Optional[np.ndarray] = None,
 ) -> np.ndarray:
-    n_samples = x.size
     out_arr = _get_out_arr(x, out)
     for season in range(season_length):
-        out_arr[season::season_length] = rolling_op(
-            x[season::season_length], window_size, min_samples
+        rolling_op(
+            x[season::season_length],
+            window_size,
+            min_samples,
+            out=out_arr[season::season_length],
         )
     return out_arr
 

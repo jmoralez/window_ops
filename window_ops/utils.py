@@ -4,7 +4,6 @@
 __all__ = ['first_not_na']
 
 # %% ../nbs/utils.ipynb 2
-from math import sqrt
 from typing import Optional, Tuple
 
 import numpy as np

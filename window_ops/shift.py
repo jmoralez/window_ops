@@ -4,14 +4,20 @@
 __all__ = ['shift_array']
 
 # %% ../nbs/shift.ipynb 2
+from typing import Optional
+
 import numpy as np
 from numba import njit  # type: ignore
 
+from .utils import _get_out_arr
+
 # %% ../nbs/shift.ipynb 3
 @njit
-def shift_array(x: np.ndarray, offset: int) -> np.ndarray:
+def shift_array(
+    x: np.ndarray, offset: int, out: Optional[np.ndarray] = None
+) -> np.ndarray:
     n_samples = x.size
-    out = np.full_like(x, np.nan)
+    out_arr = _get_out_arr(x, out)
     for i in range(n_samples - offset):
-        out[i + offset] = x[i]
-    return out
+        out_arr[i + offset] = x[i]
+    return out_arr

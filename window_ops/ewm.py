@@ -4,22 +4,24 @@
 __all__ = ['ewm_mean']
 
 # %% ../nbs/ewm.ipynb 3
-import random
+from typing import Optional
 
 import numpy as np
 from numba import njit  # type: ignore
 
-from .utils import first_not_na
+from .utils import _get_out_arr, first_not_na
 
 # %% ../nbs/ewm.ipynb 4
 @njit
-def ewm_mean(x: np.ndarray, alpha: float) -> np.ndarray:
+def ewm_mean(
+    x: np.ndarray, alpha: float, out: Optional[np.ndarray] = None
+) -> np.ndarray:
     n_samples = x.size
-    out = np.full_like(x, np.nan)
+    out_arr = _get_out_arr(x, out)
     start_idx = first_not_na(x)
     if start_idx >= n_samples:
-        return out
-    out[start_idx] = x[start_idx]
+        return out_arr
+    out_arr[start_idx] = x[start_idx]
     for i in range(start_idx + 1, n_samples):
-        out[i] = alpha * x[i] + (1 - alpha) * out[i - 1]
-    return out
+        out_arr[i] = alpha * x[i] + (1 - alpha) * out_arr[i - 1]
+    return out_arr

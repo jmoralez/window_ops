@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+mypy window_ops || exit -1
+flake8 --select=F window_ops || exit -1
+pylint window_ops
