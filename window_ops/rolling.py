@@ -78,6 +78,7 @@ def _rolling_std(input_array: np.ndarray,
         prev_avg = curr_avg
         curr_avg = prev_avg + (input_array[i] - prev_avg) / (i - start_idx + 1)
         m2 += (input_array[i] - prev_avg) * (input_array[i] - curr_avg)
+        m2 = max(m2, 0.0)
         if i + 1 >= start_idx + min_samples:
             output_array[i] = sqrt(m2 / (i - start_idx))
             
@@ -86,6 +87,7 @@ def _rolling_std(input_array: np.ndarray,
         new_minus_old = input_array[i] - input_array[i-window_size]
         curr_avg = prev_avg + new_minus_old / window_size
         m2 += new_minus_old * (input_array[i] - curr_avg + input_array[i-window_size] - prev_avg)
+        m2 = max(m2, 0.0)
         output_array[i] = sqrt(m2 / (window_size - 1))
         
     return output_array, curr_avg, m2
