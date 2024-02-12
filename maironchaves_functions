@@ -1,0 +1,152 @@
+import numpy as np
+from numba import njit
+
+@njit
+def average_days_with_sales(x, lag):
+    """
+    Calculates the average number of days with sales over a specified lag period.
+    Useful for understanding the sales frequency of each SKU.
+    
+    Parameters:
+    - x: Array of sales data.
+    - lag: The number of days to look back.
+    
+    Returns:
+    - An array with the average number of days with sales for each point in time.
+    """
+    n = len(x)
+    result = np.full(n, 0.0)  # Initializes the result with 0.0 instead of NaN
+    for i in range(lag - 1, n):
+        sum_positive_sales = np.sum(x[i - lag + 1:i + 1] > 0)
+        result[i] = sum_positive_sales / lag if lag > 0 else 0.0
+    return result
+
+@njit
+def linear_log_trend(x):
+    """
+    Generates a linear logarithmic trend for a time series.
+    
+    Parameters:
+    - x: Array of time series data.
+    
+    Returns:
+    - An array representing the natural logarithm of each time point.
+    """
+    n = len(x)
+    t = np.arange(1, n + 1)  # Creates a time array from 1 to n
+    log_trend = np.log(t)  # Calculates the natural logarithm of each time point
+    return log_trend
+
+@njit
+def rolling_correlation(x, lag):
+    """
+    Calculates the rolling correlation of a time series with a specified lag.
+    
+    Parameters:
+    - x: Array of time series data.
+    - lag: The number of days to calculate the correlation over.
+    
+    Returns:
+    - An array with the rolling correlation for each point in time.
+    """
+    n = len(x)
+    result = np.full(n, np.nan)  # Initializes the result with NaNs
+    for i in range(lag, n):
+        x1 = x[i - lag:i]
+        x2 = x[i - lag + 1:i + 1]
+        mean_x1 = np.mean(x1)
+        mean_x2 = np.mean(x2)
+        std_x1 = np.std(x1)
+        std_x2 = np.std(x2)
+        if std_x1 == 0.0 or std_x2 == 0.0:
+            result[i] = 0.0  # Avoids division by zero
+        else:
+            cov = np.mean((x1 - mean_x1) * (x2 - mean_x2))
+            corr = cov / (std_x1 * std_x2)
+            result[i] = corr
+    return result
+
+@njit
+def rolling_cv(x, window):
+    """
+    Calculates the rolling coefficient of variation (CV) over a specified window.
+    
+    Parameters:
+    - x: Array of time series data.
+    - window: The window size to calculate CV over.
+    
+    Returns:
+    - An array with the rolling CV for each point in time.
+    """
+    n = len(x)
+    result = np.full(n, 0.0)  # Initializes with 0.0 instead of NaN
+    for i in range(window - 1, n):
+        window_data = x[i - window + 1:i + 1]
+        sum_data = 0.0
+        sum_squares = 0.0
+        for val in window_data:
+            sum_data += val
+            sum_squares += val * val
+        mean = sum_data / window if window > 0 else 0.0
+        if mean == 0.0:
+            result[i] = 0.0  # Avoids division by zero
+        else:
+            std = np.sqrt(sum_squares / window - mean * mean)
+            result[i] = std / mean
+    return result
+
+@njit
+def rolling_mean_positive_only(x, window):
+    """
+    Calculates the rolling mean considering only positive sales days, ignoring effects of zero demand.
+    
+    Parameters:
+    - x: Array of sales data.
+    - window: The window size to calculate the mean over.
+    
+    Returns:
+    - An array with the rolling mean for each point in time, considering only days with positive sales.
+    """
+    n = len(x)
+    result = np.full(n, 0.0)  # Initializes with 0.0 instead of NaN
+    for i in range(window - 1, n):
+        window_data = x[i - window + 1:i + 1]
+        sum_data = 0.0
+        count = 0
+        for val in window_data:
+            if val > 0:
+                sum_data += val
+                count += 1
+        if count > 0:
+            result[i] = sum_data / count
+        else:
+            result[i] = 0.0  # Window without positive values, mean is 0
+    return result
+
+# Note: The function `rolling_skewness` seems to be a duplicate of `rolling_mean_positive_only`.
+# If you intended to include a function for calculating rolling skewness, please ensure to provide the correct implementation.
+
+@njit
+def rolling_kurtosis(x, window):
+    """
+    Calculates the rolling kurtosis, helping identify the presence of outliers in sales and how data deviates from a normal distribution.
+    
+    Parameters:
+    - x: Array of sales data.
+    - window: The window size to calculate kurtosis over.
+    
+    Returns:
+    - An array with the rolling kurtosis for each point in time.
+    """
+    n = len(x)
+    result = np.full(n, 0.0)  # Initializes with 0.0 instead of NaN
+    for i in range(window - 1, n):
+        window_data = x[i - window + 1:i + 1]
+        mean = np.mean(window_data)
+        std = np.std(window_data)
+        if std > 0:
+            kurtosis = np.mean((window_data - mean) ** 4) / (std ** 4) - 3
+        else:
+            kurtosis = 0.0
+        result[i] = kurtosis
+    return result
