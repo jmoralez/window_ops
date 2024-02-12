@@ -123,8 +123,7 @@ def rolling_mean_positive_only(x, window):
             result[i] = 0.0  # Window without positive values, mean is 0
     return result
 
-# Note: The function `rolling_skewness` seems to be a duplicate of `rolling_mean_positive_only`.
-# If you intended to include a function for calculating rolling skewness, please ensure to provide the correct implementation.
+
 
 @njit
 def rolling_kurtosis(x, window):
