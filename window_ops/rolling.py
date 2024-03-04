@@ -2,8 +2,8 @@
 
 # %% auto 0
 __all__ = ['rolling_mean', 'rolling_std', 'rolling_max', 'rolling_min', 'rolling_correlation', 'rolling_cv',
-           'rolling_mean_positive_only', 'rolling_kurtosis', 'seasonal_rolling_mean', 'seasonal_rolling_std',
-           'seasonal_rolling_max', 'seasonal_rolling_min']
+           'rolling_mean_positive_only', 'rolling_kurtosis', 'rolling_average_days_with_sales', 'seasonal_rolling_mean',
+           'seasonal_rolling_std', 'seasonal_rolling_max', 'seasonal_rolling_min']
 
 # %% ../nbs/rolling.ipynb 3
 from math import sqrt
@@ -170,7 +170,7 @@ def rolling_correlation(x: np.ndarray, window_size: int) -> np.ndarray:
     x : np.ndarray
         Array of time series data.
     window_size : int
-        The size of the window to calculate the correlation over.
+        Size of the sliding window.
     
     Returns
     -------
@@ -204,7 +204,7 @@ def rolling_cv(x: np.ndarray, window_size: int) -> np.ndarray:
     x : np.ndarray
         Array of time series data.
     window_size : int
-        The window size to calculate CV over.
+        Size of the sliding window.
     
     Returns
     -------
@@ -231,15 +231,14 @@ def rolling_cv(x: np.ndarray, window_size: int) -> np.ndarray:
 # %% ../nbs/rolling.ipynb 23
 @njit
 def rolling_mean_positive_only(x: np.ndarray, window_size: int) -> np.ndarray:
-    """
-    Calculates the rolling mean considering only positive sales days, ignoring effects of zero demand.
+    """Calculates the rolling mean considering only positive sales days, ignoring effects of zero demand.
     
     Parameters
     ----------
     x : np.ndarray
         Array of sales data.
     window_size : int
-        The window size to calculate the mean over.
+        Size of the sliding window.
     
     Returns
     -------
@@ -272,7 +271,7 @@ def rolling_kurtosis(x: np.ndarray, window_size: int) -> np.ndarray:
     x : np.ndarray
         Array of sales data.
     window_size : int
-        The window size to calculate kurtosis over.
+        Size of the sliding window.
     
     Returns
     -------
@@ -292,7 +291,32 @@ def rolling_kurtosis(x: np.ndarray, window_size: int) -> np.ndarray:
         result[i] = kurtosis
     return result
 
-# %% ../nbs/rolling.ipynb 28
+# %% ../nbs/rolling.ipynb 27
+@njit
+def rolling_average_days_with_sales(x: np.ndarray, window_size: int) -> np.ndarray:
+    """Calculates the average number of days with sales over a window.
+    Useful for understanding the sales frequency of each SKU.
+    
+    Parameters
+    ----------
+    x : np.ndarray
+        Array of sales data.
+    window_size : int
+        Size of the sliding window.
+    
+    Returns
+    -------
+    np.ndarray
+        Array with the average number of days with sales for each point in time.
+    """
+    n = len(x)
+    result = np.zeros(n)  # Initializes the result with zeros instead of NaN
+    for i in range(window_size - 1, n):
+        sum_positive_sales = np.sum(x[i - window_size + 1:i + 1] > 0)
+        result[i] = sum_positive_sales / window_size if window_size > 0 else 0.0
+    return result
+
+# %% ../nbs/rolling.ipynb 30
 def _seasonal_rolling_docstring(*args, **kwargs) -> Callable:
     base_docstring = """Compute the {} over the last non-na window_size samples for each seasonal period of the input array starting at min_samples.
 
@@ -330,7 +354,7 @@ def _seasonal_rolling_op(rolling_op: Callable,
         output_array[season::season_length] = rolling_op(input_array[season::season_length], window_size, min_samples)
     return output_array
 
-# %% ../nbs/rolling.ipynb 31
+# %% ../nbs/rolling.ipynb 33
 @njit
 @_seasonal_rolling_docstring
 def seasonal_rolling_mean(input_array: np.ndarray,
@@ -339,7 +363,7 @@ def seasonal_rolling_mean(input_array: np.ndarray,
                           min_samples: Optional[int] = None) -> np.ndarray:
     return _seasonal_rolling_op(rolling_mean, input_array, season_length, window_size, min_samples)
 
-# %% ../nbs/rolling.ipynb 33
+# %% ../nbs/rolling.ipynb 35
 @njit
 @_seasonal_rolling_docstring
 def seasonal_rolling_std(input_array: np.ndarray,
@@ -348,7 +372,7 @@ def seasonal_rolling_std(input_array: np.ndarray,
                          min_samples: Optional[int] = None) -> np.ndarray:
     return _seasonal_rolling_op(rolling_std, input_array, season_length, window_size, min_samples)
 
-# %% ../nbs/rolling.ipynb 35
+# %% ../nbs/rolling.ipynb 37
 @njit
 @_seasonal_rolling_docstring
 def seasonal_rolling_max(input_array: np.ndarray,
@@ -357,7 +381,7 @@ def seasonal_rolling_max(input_array: np.ndarray,
                          min_samples: Optional[int] = None) -> np.ndarray:
     return _seasonal_rolling_op(rolling_max, input_array, season_length, window_size, min_samples)
 
-# %% ../nbs/rolling.ipynb 37
+# %% ../nbs/rolling.ipynb 39
 @njit
 @_seasonal_rolling_docstring
 def seasonal_rolling_min(x: np.ndarray,
