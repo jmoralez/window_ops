@@ -4,7 +4,6 @@ website:
       - index.ipynb
       - ewm.ipynb
       - expanding.ipynb
-      - misc.ipynb
       - online.ipynb
       - rolling.ipynb
       - shift.ipynb
