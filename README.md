@@ -17,7 +17,7 @@ online classes for more efficient updates of window statistics.
 ### Transformations
 
 For a transformations `n_samples` -\> `n_samples` you can use
-`{[seasonal_](rolling|expanding)}_{(mean|max|min|std)}` on an array.
+`[seasonal_](rolling|expanding)_(mean|max|min|std)` on an array.
 
 #### Benchmarks
 
