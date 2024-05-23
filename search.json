@@ -1,0 +1,172 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Window ops",
+    "section": "",
+    "text": "This library is intended to be used as an alternative to pd.Series.rolling and pd.Series.expanding to gain a speedup by using numba optimized functions operating on numpy arrays. There are also online classes for more efficient updates of window statistics.",
+    "crumbs": [
+      "Window ops"
+    ]
+  },
+  {
+    "objectID": "index.html#install",
+    "href": "index.html#install",
+    "title": "Window ops",
+    "section": "Install",
+    "text": "Install\n\nPyPI\npip install window-ops",
+    "crumbs": [
+      "Window ops"
+    ]
+  },
+  {
+    "objectID": "index.html#conda",
+    "href": "index.html#conda",
+    "title": "Window ops",
+    "section": "conda",
+    "text": "conda\nconda install -c conda-forge window-ops",
+    "crumbs": [
+      "Window ops"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "Window ops",
+    "section": "How to use",
+    "text": "How to use\n\nTransformations\nFor a transformations n_samples -&gt; n_samples you can use [seasonal_](rolling|expanding)_(mean|max|min|std) on an array.\n\nBenchmarks\n\npd.__version__\n\n'1.3.5'\n\n\n\nn_samples = 10_000  # array size\nwindow_size = 8  # for rolling operations\nseason_length = 7  # for seasonal operations\nexecute_times = 10 # number of times each function will be executed\n\nAverage times in milliseconds.\n\ntimes.applymap('{:.2f}'.format)\n\n\n\n\n\n\n\n\n\nwindow_ops\npandas\n\n\n\n\nrolling_mean\n0.03\n0.43\n\n\nrolling_max\n0.14\n0.57\n\n\nrolling_min\n0.14\n0.58\n\n\nrolling_std\n0.06\n0.54\n\n\nexpanding_mean\n0.03\n0.31\n\n\nexpanding_max\n0.05\n0.76\n\n\nexpanding_min\n0.05\n0.47\n\n\nexpanding_std\n0.09\n0.41\n\n\nseasonal_rolling_mean\n0.05\n3.89\n\n\nseasonal_rolling_max\n0.18\n4.27\n\n\nseasonal_rolling_min\n0.18\n3.75\n\n\nseasonal_rolling_std\n0.08\n4.38\n\n\nseasonal_expanding_mean\n0.04\n3.18\n\n\nseasonal_expanding_max\n0.06\n3.29\n\n\nseasonal_expanding_min\n0.06\n3.28\n\n\nseasonal_expanding_std\n0.12\n3.89\n\n\n\n\n\n\n\n\n\nspeedups = times['pandas'] / times['window_ops']\nspeedups = speedups.to_frame('times faster')\nspeedups.applymap('{:.0f}'.format)\n\n\n\n\n\n\n\n\n\ntimes faster\n\n\n\n\nrolling_mean\n15\n\n\nrolling_max\n4\n\n\nrolling_min\n4\n\n\nrolling_std\n9\n\n\nexpanding_mean\n12\n\n\nexpanding_max\n15\n\n\nexpanding_min\n9\n\n\nexpanding_std\n4\n\n\nseasonal_rolling_mean\n77\n\n\nseasonal_rolling_max\n23\n\n\nseasonal_rolling_min\n21\n\n\nseasonal_rolling_std\n52\n\n\nseasonal_expanding_mean\n78\n\n\nseasonal_expanding_max\n52\n\n\nseasonal_expanding_min\n51\n\n\nseasonal_expanding_std\n33\n\n\n\n\n\n\n\n\n\n\n\nOnline\nIf you have an array for which you want to compute a window statistic and then keep updating it as more samples come in you can use the classes in the window_ops.online module. They all have a fit_transform method which take the array and return the transformations defined above but also have an update method that take a single value and return the new statistic.\n\nBenchmarks\nAverage time in milliseconds it takes to transform the array and perform 100 updates.\n\ntimes.to_frame().applymap('{:.2f}'.format)\n\n\n\n\n\n\n\n\n\naverage time (ms)\n\n\n\n\nRollingMean\n0.12\n\n\nRollingMax\n0.23\n\n\nRollingMin\n0.22\n\n\nRollingStd\n0.32\n\n\nExpandingMean\n0.10\n\n\nExpandingMax\n0.07\n\n\nExpandingMin\n0.07\n\n\nExpandingStd\n0.17\n\n\nSeasonalRollingMean\n0.28\n\n\nSeasonalRollingMax\n0.35\n\n\nSeasonalRollingMin\n0.38\n\n\nSeasonalRollingStd\n0.42\n\n\nSeasonalExpandingMean\n0.17\n\n\nSeasonalExpandingMax\n0.14\n\n\nSeasonalExpandingMin\n0.15\n\n\nSeasonalExpandingStd\n0.23",
+    "crumbs": [
+      "Window ops"
+    ]
+  },
+  {
+    "objectID": "online.html",
+    "href": "online.html",
+    "title": "Online",
+    "section": "",
+    "text": "np.random.seed(0)\ny = np.random.rand(100)\ndef test_online(OnlineOp, regular_op, y, n_updates=10, **op_kwargs):\n    expected = regular_op(y, **op_kwargs)\n    online = OnlineOp(**op_kwargs)\n    calculated = online.fit_transform(y[:-n_updates]).tolist()\n    for i in range(y.size - n_updates, y.size):\n        calculated.append(online.update(y[i]))\n    np.testing.assert_allclose(calculated, expected)",
+    "crumbs": [
+      "Online"
+    ]
+  },
+  {
+    "objectID": "online.html#rolling",
+    "href": "online.html#rolling",
+    "title": "Online",
+    "section": "Rolling",
+    "text": "Rolling\n\nRegular\n\nsource\n\n\nRollingMean\n\n RollingMean (window_size:int, min_samples:Optional[int]=None)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(RollingMean, rolling_mean, y, window_size=4, min_samples=1)\ntest_online(RollingMean, rolling_mean, y, n_updates=90, window_size=14, min_samples=3)\ntest_online(RollingMean, rolling_mean, y, n_updates=96, window_size=7, min_samples=7)\n\n\nsource\n\n\nRollingMax\n\n RollingMax (window_size:int, min_samples:Optional[int]=None)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(RollingMax, rolling_max, y, window_size=4, min_samples=1)\ntest_online(RollingMax, rolling_max, y, n_updates=90, window_size=14, min_samples=3)\ntest_online(RollingMax, rolling_max, y, n_updates=96, window_size=7, min_samples=7)\n\n\nsource\n\n\nRollingMin\n\n RollingMin (window_size:int, min_samples:Optional[int]=None)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(RollingMin, rolling_min, y, window_size=4, min_samples=1)\ntest_online(RollingMin, rolling_min, y, n_updates=90, window_size=14, min_samples=3)\ntest_online(RollingMin, rolling_min, y, n_updates=96, window_size=7, min_samples=7)\n\n\nsource\n\n\nRollingStd\n\n RollingStd (window_size:int, min_samples:Optional[int]=None)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(RollingStd, rolling_std, y, window_size=4, min_samples=2)\ntest_online(RollingStd, rolling_std, y, n_updates=90, window_size=14, min_samples=3)\ntest_online(RollingStd, rolling_std, y, n_updates=96, window_size=7, min_samples=7)\n\n\nonline_std = RollingStd(7)\nonline_std.fit_transform(y)\nfor _ in range(14):\n    online_std.update(0)\n\n\n\nSeasonal\n\nsource\n\n\nSeasonalRollingMean\n\n SeasonalRollingMean (season_length:int, window_size:int,\n                      min_samples:Optional[int]=None)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(SeasonalRollingMean, seasonal_rolling_mean, y, window_size=4, min_samples=1, season_length=7)\ntest_online(SeasonalRollingMean, seasonal_rolling_mean, y, n_updates=79, window_size=4, min_samples=2, season_length=7)\n\n\nsource\n\n\nSeasonalRollingStd\n\n SeasonalRollingStd (season_length:int, window_size:int,\n                     min_samples:Optional[int]=None)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(SeasonalRollingStd, seasonal_rolling_std, y, window_size=4, min_samples=2, season_length=7)\ntest_online(SeasonalRollingStd, seasonal_rolling_std, y, n_updates=79, window_size=4, min_samples=2, season_length=7)\n\n\nsource\n\n\nSeasonalRollingMin\n\n SeasonalRollingMin (season_length:int, window_size:int,\n                     min_samples:Optional[int]=None)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(SeasonalRollingMin, seasonal_rolling_min, y, window_size=4, min_samples=1, season_length=7)\ntest_online(SeasonalRollingMin, seasonal_rolling_min, y, n_updates=79, window_size=4, min_samples=2, season_length=7)\n\n\nsource\n\n\nSeasonalRollingMax\n\n SeasonalRollingMax (season_length:int, window_size:int,\n                     min_samples:Optional[int]=None)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(SeasonalRollingMax, seasonal_rolling_max, y, window_size=4, min_samples=1, season_length=7)\ntest_online(SeasonalRollingMax, seasonal_rolling_max, y, n_updates=79, window_size=4, min_samples=2, season_length=7)",
+    "crumbs": [
+      "Online"
+    ]
+  },
+  {
+    "objectID": "online.html#expanding",
+    "href": "online.html#expanding",
+    "title": "Online",
+    "section": "Expanding",
+    "text": "Expanding\n\nRegular\n\nsource\n\n\nExpandingMean\n\n ExpandingMean ()\n\nInitialize self. See help(type(self)) for accurate signature.\n\nnp.random.seed(0)\ny = np.random.rand(100)\n\n\ntest_online(ExpandingMean, expanding_mean, y)\n\n\nsource\n\n\nExpandingMax\n\n ExpandingMax ()\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(ExpandingMax, expanding_max, y)\n\n\nsource\n\n\nExpandingMin\n\n ExpandingMin ()\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(ExpandingMin, expanding_min, y)\n\n\nsource\n\n\nExpandingStd\n\n ExpandingStd ()\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(ExpandingStd, expanding_std, y)\n\n\n\nSeasonal\n\nsource\n\n\nSeasonalExpandingMean\n\n SeasonalExpandingMean (season_length:int)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(SeasonalExpandingMean, seasonal_expanding_mean, y, season_length=7)\n\n\nsource\n\n\nSeasonalExpandingStd\n\n SeasonalExpandingStd (season_length:int)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(SeasonalExpandingStd, seasonal_expanding_std, y, season_length=7)\n\n\nsource\n\n\nSeasonalExpandingMin\n\n SeasonalExpandingMin (season_length:int)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(SeasonalExpandingMin, seasonal_expanding_min, y, season_length=7)\n\n\nsource\n\n\nSeasonalExpandingMax\n\n SeasonalExpandingMax (season_length:int)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(SeasonalExpandingMax, seasonal_expanding_max, y, season_length=7)",
+    "crumbs": [
+      "Online"
+    ]
+  },
+  {
+    "objectID": "online.html#ewm",
+    "href": "online.html#ewm",
+    "title": "Online",
+    "section": "EWM",
+    "text": "EWM\n\nsource\n\nEWMMean\n\n EWMMean (alpha)\n\nInitialize self. See help(type(self)) for accurate signature.\n\ntest_online(EWMMean, ewm_mean, y, alpha=0.3)",
+    "crumbs": [
+      "Online"
+    ]
+  },
+  {
+    "objectID": "online.html#shifting",
+    "href": "online.html#shifting",
+    "title": "Online",
+    "section": "Shifting",
+    "text": "Shifting\n\nsource\n\nShift\n\n Shift (offset:int)\n\nInitialize self. See help(type(self)) for accurate signature.\n\nfor offset in (1, 3, 7):\n    test_online(Shift, shift_array, y, offset=offset, n_updates=2*offset)",
+    "crumbs": [
+      "Online"
+    ]
+  },
+  {
+    "objectID": "rolling.html",
+    "href": "rolling.html",
+    "title": "Rolling",
+    "section": "",
+    "text": "source\n\n\n\n rolling_mean (input_array:numpy.ndarray, window_size:int,\n               min_samples:Optional[int]=None)\n\nCompute the rolling_mean over the last non-na window_size samples of the input array starting at min_samples.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ninput_array\nndarray\n\nInput array\n\n\nwindow_size\nint\n\nSize of the sliding window\n\n\nmin_samples\nOptional\nNone\nMinimum number of samples to produce a result, if None then it’s set to window_size\n\n\nReturns\nndarray\n\nArray with rolling computation\n\n\n\n\nsource\n\n\n\n\n rolling_std (input_array:numpy.ndarray, window_size:int,\n              min_samples:Optional[int]=None)\n\nCompute the rolling_std over the last non-na window_size samples of the input array starting at min_samples.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ninput_array\nndarray\n\nInput array\n\n\nwindow_size\nint\n\nSize of the sliding window\n\n\nmin_samples\nOptional\nNone\nMinimum number of samples to produce a result, if None then it’s set to window_size\n\n\nReturns\nndarray\n\nArray with rolling computation\n\n\n\n\nsource\n\n\n\n\n rolling_max (input_array:numpy.ndarray, window_size:int,\n              min_samples:Optional[int]=None)\n\nCompute the rolling_max over the last non-na window_size samples of the input array starting at min_samples.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ninput_array\nndarray\n\nInput array\n\n\nwindow_size\nint\n\nSize of the sliding window\n\n\nmin_samples\nOptional\nNone\nMinimum number of samples to produce a result, if None then it’s set to window_size\n\n\nReturns\nndarray\n\nArray with rolling computation\n\n\n\n\nsource\n\n\n\n\n rolling_min (x:numpy.ndarray, window_size:int,\n              min_samples:Optional[int]=None)\n\nCompute the rolling_min over the last non-na window_size samples of the input array starting at min_samples.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nx\nndarray\n\n\n\n\nwindow_size\nint\n\nSize of the sliding window\n\n\nmin_samples\nOptional\nNone\nMinimum number of samples to produce a result, if None then it’s set to window_size\n\n\nReturns\nndarray\n\nArray with rolling computation\n\n\n\n\nsource\n\n\n\n\n rolling_correlation (x:numpy.ndarray, window_size:int)\n\nCalculates the rolling correlation of a time series.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nx\nndarray\nArray of time series data.\n\n\nwindow_size\nint\nSize of the sliding window.\n\n\nReturns\nndarray\nArray with the rolling correlation for each point in time.\n\n\n\n\nsource\n\n\n\n\n rolling_cv (x:numpy.ndarray, window_size:int)\n\nCalculates the rolling coefficient of variation (CV) over a specified window.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nx\nndarray\nArray of time series data.\n\n\nwindow_size\nint\nSize of the sliding window.\n\n\nReturns\nndarray\nAn array with the rolling CV for each point in time.\n\n\n\n\nsource\n\n\n\n\n rolling_mean_positive_only (x:numpy.ndarray, window_size:int)\n\nCalculates the rolling mean considering only positive sales days, ignoring effects of zero demand.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nx\nndarray\nArray of sales data.\n\n\nwindow_size\nint\nSize of the sliding window.\n\n\nReturns\nndarray\nAn array with the rolling mean for each point in time, considering only days with positive sales.\n\n\n\n\nsource\n\n\n\n\n rolling_kurtosis (x:numpy.ndarray, window_size:int)\n\nCalculates the rolling kurtosis, helping identify the presence of outliers in sales and how data deviates from a normal distribution.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nx\nndarray\nArray of sales data.\n\n\nwindow_size\nint\nSize of the sliding window.\n\n\nReturns\nndarray\nArray with the rolling kurtosis for each point in time.\n\n\n\n\nsource\n\n\n\n\n rolling_average_days_with_sales (x:numpy.ndarray, window_size:int)\n\nCalculates the average number of days with sales over a window. Useful for understanding the sales frequency of each SKU.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nx\nndarray\nArray of sales data.\n\n\nwindow_size\nint\nSize of the sliding window.\n\n\nReturns\nndarray\nArray with the average number of days with sales for each point in time.",
+    "crumbs": [
+      "Rolling"
+    ]
+  },
+  {
+    "objectID": "rolling.html#regular",
+    "href": "rolling.html#regular",
+    "title": "Rolling",
+    "section": "",
+    "text": "source\n\n\n\n rolling_mean (input_array:numpy.ndarray, window_size:int,\n               min_samples:Optional[int]=None)\n\nCompute the rolling_mean over the last non-na window_size samples of the input array starting at min_samples.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ninput_array\nndarray\n\nInput array\n\n\nwindow_size\nint\n\nSize of the sliding window\n\n\nmin_samples\nOptional\nNone\nMinimum number of samples to produce a result, if None then it’s set to window_size\n\n\nReturns\nndarray\n\nArray with rolling computation\n\n\n\n\nsource\n\n\n\n\n rolling_std (input_array:numpy.ndarray, window_size:int,\n              min_samples:Optional[int]=None)\n\nCompute the rolling_std over the last non-na window_size samples of the input array starting at min_samples.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ninput_array\nndarray\n\nInput array\n\n\nwindow_size\nint\n\nSize of the sliding window\n\n\nmin_samples\nOptional\nNone\nMinimum number of samples to produce a result, if None then it’s set to window_size\n\n\nReturns\nndarray\n\nArray with rolling computation\n\n\n\n\nsource\n\n\n\n\n rolling_max (input_array:numpy.ndarray, window_size:int,\n              min_samples:Optional[int]=None)\n\nCompute the rolling_max over the last non-na window_size samples of the input array starting at min_samples.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ninput_array\nndarray\n\nInput array\n\n\nwindow_size\nint\n\nSize of the sliding window\n\n\nmin_samples\nOptional\nNone\nMinimum number of samples to produce a result, if None then it’s set to window_size\n\n\nReturns\nndarray\n\nArray with rolling computation\n\n\n\n\nsource\n\n\n\n\n rolling_min (x:numpy.ndarray, window_size:int,\n              min_samples:Optional[int]=None)\n\nCompute the rolling_min over the last non-na window_size samples of the input array starting at min_samples.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nx\nndarray\n\n\n\n\nwindow_size\nint\n\nSize of the sliding window\n\n\nmin_samples\nOptional\nNone\nMinimum number of samples to produce a result, if None then it’s set to window_size\n\n\nReturns\nndarray\n\nArray with rolling computation\n\n\n\n\nsource\n\n\n\n\n rolling_correlation (x:numpy.ndarray, window_size:int)\n\nCalculates the rolling correlation of a time series.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nx\nndarray\nArray of time series data.\n\n\nwindow_size\nint\nSize of the sliding window.\n\n\nReturns\nndarray\nArray with the rolling correlation for each point in time.\n\n\n\n\nsource\n\n\n\n\n rolling_cv (x:numpy.ndarray, window_size:int)\n\nCalculates the rolling coefficient of variation (CV) over a specified window.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nx\nndarray\nArray of time series data.\n\n\nwindow_size\nint\nSize of the sliding window.\n\n\nReturns\nndarray\nAn array with the rolling CV for each point in time.\n\n\n\n\nsource\n\n\n\n\n rolling_mean_positive_only (x:numpy.ndarray, window_size:int)\n\nCalculates the rolling mean considering only positive sales days, ignoring effects of zero demand.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nx\nndarray\nArray of sales data.\n\n\nwindow_size\nint\nSize of the sliding window.\n\n\nReturns\nndarray\nAn array with the rolling mean for each point in time, considering only days with positive sales.\n\n\n\n\nsource\n\n\n\n\n rolling_kurtosis (x:numpy.ndarray, window_size:int)\n\nCalculates the rolling kurtosis, helping identify the presence of outliers in sales and how data deviates from a normal distribution.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nx\nndarray\nArray of sales data.\n\n\nwindow_size\nint\nSize of the sliding window.\n\n\nReturns\nndarray\nArray with the rolling kurtosis for each point in time.\n\n\n\n\nsource\n\n\n\n\n rolling_average_days_with_sales (x:numpy.ndarray, window_size:int)\n\nCalculates the average number of days with sales over a window. Useful for understanding the sales frequency of each SKU.\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\nx\nndarray\nArray of sales data.\n\n\nwindow_size\nint\nSize of the sliding window.\n\n\nReturns\nndarray\nArray with the average number of days with sales for each point in time.",
+    "crumbs": [
+      "Rolling"
+    ]
+  },
+  {
+    "objectID": "rolling.html#seasonal",
+    "href": "rolling.html#seasonal",
+    "title": "Rolling",
+    "section": "Seasonal",
+    "text": "Seasonal\n\nsource\n\nseasonal_rolling_mean\n\n seasonal_rolling_mean (input_array:numpy.ndarray, season_length:int,\n                        window_size:int, min_samples:Optional[int]=None)\n\nCompute the seasonal_rolling_mean over the last non-na window_size samples for each seasonal period of the input array starting at min_samples.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ninput_array\nndarray\n\nInput array\n\n\nseason_length\nint\n\nLength of the seasonal period\n\n\nwindow_size\nint\n\nSize of the sliding window\n\n\nmin_samples\nOptional\nNone\nMinimum number of samples to produce a result, if None then it’s set to window_size\n\n\nReturns\nndarray\n\nArray with rolling computation\n\n\n\n\nsource\n\n\nseasonal_rolling_std\n\n seasonal_rolling_std (input_array:numpy.ndarray, season_length:int,\n                       window_size:int, min_samples:Optional[int]=None)\n\nCompute the seasonal_rolling_std over the last non-na window_size samples for each seasonal period of the input array starting at min_samples.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ninput_array\nndarray\n\nInput array\n\n\nseason_length\nint\n\nLength of the seasonal period\n\n\nwindow_size\nint\n\nSize of the sliding window\n\n\nmin_samples\nOptional\nNone\nMinimum number of samples to produce a result, if None then it’s set to window_size\n\n\nReturns\nndarray\n\nArray with rolling computation\n\n\n\n\nsource\n\n\nseasonal_rolling_max\n\n seasonal_rolling_max (input_array:numpy.ndarray, season_length:int,\n                       window_size:int, min_samples:Optional[int]=None)\n\nCompute the seasonal_rolling_max over the last non-na window_size samples for each seasonal period of the input array starting at min_samples.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ninput_array\nndarray\n\nInput array\n\n\nseason_length\nint\n\nLength of the seasonal period\n\n\nwindow_size\nint\n\nSize of the sliding window\n\n\nmin_samples\nOptional\nNone\nMinimum number of samples to produce a result, if None then it’s set to window_size\n\n\nReturns\nndarray\n\nArray with rolling computation\n\n\n\n\nsource\n\n\nseasonal_rolling_min\n\n seasonal_rolling_min (x:numpy.ndarray, season_length:int,\n                       window_size:int, min_samples:Optional[int]=None)\n\nCompute the seasonal_rolling_min over the last non-na window_size samples for each seasonal period of the input array starting at min_samples.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nx\nndarray\n\n\n\n\nseason_length\nint\n\nLength of the seasonal period\n\n\nwindow_size\nint\n\nSize of the sliding window\n\n\nmin_samples\nOptional\nNone\nMinimum number of samples to produce a result, if None then it’s set to window_size\n\n\nReturns\nndarray\n\nArray with rolling computation",
+    "crumbs": [
+      "Rolling"
+    ]
+  },
+  {
+    "objectID": "expanding.html",
+    "href": "expanding.html",
+    "title": "Expanding",
+    "section": "",
+    "text": "import pandas as pd\n\nnp.random.seed(0)\narray = np.random.rand(100)\nseries = pd.Series(array)\nsource",
+    "crumbs": [
+      "Expanding"
+    ]
+  },
+  {
+    "objectID": "expanding.html#seasonal",
+    "href": "expanding.html#seasonal",
+    "title": "Expanding",
+    "section": "Seasonal",
+    "text": "Seasonal\n\nseasons = np.arange(array.size) % 7\ngrouped_series = series.groupby(seasons)\n\n\nsource\n\nseasonal_expanding_mean\n\n seasonal_expanding_mean (x:numpy.ndarray, season_length:int)\n\n\nnp.testing.assert_allclose(\n    seasonal_expanding_mean(array, 7),\n    grouped_series.transform(lambda y: y.expanding().mean())\n)\n\n\nsource\n\n\nseasonal_expanding_std\n\n seasonal_expanding_std (x:numpy.ndarray, season_length:int)\n\n\nnp.testing.assert_allclose(\n    seasonal_expanding_std(array, 7),\n    grouped_series.transform(lambda y: y.expanding().std())\n)\n\n\nsource\n\n\nseasonal_expanding_min\n\n seasonal_expanding_min (x:numpy.ndarray, season_length:int)\n\n\nnp.testing.assert_allclose(\n    seasonal_expanding_min(array, 7),\n    grouped_series.transform(lambda y: y.expanding().min())\n)\n\n\nsource\n\n\nseasonal_expanding_max\n\n seasonal_expanding_max (x:numpy.ndarray, season_length:int)\n\n\nnp.testing.assert_allclose(\n    seasonal_expanding_min(array, 7),\n    grouped_series.transform(lambda y: y.expanding().min())\n)",
+    "crumbs": [
+      "Expanding"
+    ]
+  },
+  {
+    "objectID": "shift.html",
+    "href": "shift.html",
+    "title": "Shift",
+    "section": "",
+    "text": "source\n\nshift_array\n\n shift_array (input_array:numpy.ndarray, offset:int)\n\n\nimport pandas as pd\n\nnp.random.seed(0)\narray = np.random.rand(100)\nseries = pd.Series(array)\n\n\nnp.testing.assert_allclose(\n    shift_array(array, 7),\n    series.shift(7)\n)",
+    "crumbs": [
+      "Shift"
+    ]
+  },
+  {
+    "objectID": "utils.html",
+    "href": "utils.html",
+    "title": "Utils",
+    "section": "",
+    "text": "source\n\nfirst_not_na\n\n first_not_na (input_array:numpy.ndarray)\n\nReturns the index of the first non-na value in the array.",
+    "crumbs": [
+      "Utils"
+    ]
+  },
+  {
+    "objectID": "ewm.html",
+    "href": "ewm.html",
+    "title": "EWM",
+    "section": "",
+    "text": "source\n\newm_mean\n\n ewm_mean (input_array:numpy.ndarray, alpha:float)\n\n\nimport pandas as pd\n\ny = np.random.rand(10)\nys = pd.Series(y)\nalpha = random.random()\n\nassert np.allclose(ewm_mean(y, alpha), ys.ewm(alpha=alpha, adjust=False).mean().values)",
+    "crumbs": [
+      "EWM"
+    ]
+  }
+]
