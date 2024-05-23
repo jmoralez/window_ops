@@ -10,7 +10,13 @@ online classes for more efficient updates of window statistics.
 
 ## Install
 
+### PyPI
+
 `pip install window-ops`
+
+## conda
+
+`conda install -c conda-forge window-ops`
 
 ## How to use
 
